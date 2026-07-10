@@ -1,0 +1,43 @@
+@import "./theme.css";
+
+.search-container{
+    width:100%;
+}
+
+.search-input{
+
+    width:100%;
+
+    padding:18px 22px;
+
+    background:var(--surface);
+
+    border:2px solid var(--border);
+
+    border-radius:var(--radius-medium);
+
+    color:var(--text);
+
+    font-size:18px;
+
+    transition:var(--transition);
+
+    box-sizing:border-box;
+
+}
+
+.search-input:focus{
+
+    outline:none;
+
+    border-color:var(--primary);
+
+    box-shadow:var(--gold-shadow);
+
+}
+
+.search-input::placeholder{
+
+    color:var(--text-secondary);
+
+}

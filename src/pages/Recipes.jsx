@@ -1,63 +1,48 @@
 import { useEffect, useState } from "react";
+import { getRecipes } from "../services/recipeService";
 import RecipeCard from "../components/RecipeCard";
-import {
-  getRecipes,
-  deleteRecipe,
-} from "../services/recipeService";
+import Header from "../components/Header";
 
 function Recipes() {
-  const [recipeList, setRecipeList] = useState([]);
+
+  const [recipes, setRecipes] = useState([]);
 
   useEffect(() => {
-    setRecipeList(getRecipes());
+    setRecipes(getRecipes());
   }, []);
 
-  const handleDelete = (id) => {
-    deleteRecipe(id);
-    setRecipeList(getRecipes());
-  };
-
   return (
-    <div
-      style={{
-        background: "#1b1b1b",
-        minHeight: "100vh",
-        color: "white",
-        padding: "40px",
-      }}
-    >
-      <h1>📖 Receptek</h1>
+    <div className="details-page">
 
-      {recipeList.length === 0 ? (
-        <p>Még nincs egyetlen recept sem.</p>
-      ) : (
-        recipeList.map((recipe) => (
-          <div key={recipe.id}>
-            <RecipeCard recipe={recipe} />
+      <Header title="Receptek" />
 
-            <div
-              style={{
-                textAlign: "center",
-                marginBottom: "30px",
-              }}
-            >
-              <button
-                onClick={() => handleDelete(recipe.id)}
-                style={{
-                  background: "#c62828",
-                  color: "white",
-                  border: "none",
-                  padding: "10px 20px",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                }}
-              >
-                🗑️ Törlés
-              </button>
-            </div>
-          </div>
-        ))
-      )}
+      <div className="details-container">
+
+        {recipes.length === 0 ? (
+
+          <h2
+            style={{
+              color: "white",
+              textAlign: "center",
+              marginTop: "50px",
+            }}
+          >
+            Még nincs recept.
+          </h2>
+
+        ) : (
+
+          recipes.map((recipe) => (
+            <RecipeCard
+              key={recipe.id}
+              recipe={recipe}
+            />
+          ))
+
+        )}
+
+      </div>
+
     </div>
   );
 }

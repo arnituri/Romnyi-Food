@@ -1,37 +1,28 @@
-import { Link } from "react-router-dom";
+import Layout from "../components/Layout";
+import SearchBar from "../components/SearchBar";
+import QuickActions from "../components/QuickActions";
+import DailyRecommendation from "../components/DailyRecommendation";
+import Categories from "../components/Categories";
+
+import "../styles/Home.css";
 
 function Home() {
   return (
-    <div
-      style={{
-        background: "#0b0b0b",
-        color: "white",
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        gap: "20px",
-      }}
-    >
-      <h1>👑 ROMNYI FOOD</h1>
+    <Layout title="Romnyi Food">
 
-      <Link to="/recipes">
-        <button>📖 Receptek</button>
-      </Link>
+      <div className="home-page">
 
-      <Link to="/favorites">
-        <button>❤️ Kedvencek</button>
-      </Link>
+        <SearchBar />
 
-      <Link to="/add">
-        <button>➕ Új recept</button>
-      </Link>
+        <QuickActions />
 
-      <Link to="/settings">
-        <button>⚙️ Beállítások</button>
-      </Link>
-    </div>
+        <DailyRecommendation />
+
+        <Categories />
+
+      </div>
+
+    </Layout>
   );
 }
 

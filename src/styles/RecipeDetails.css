@@ -1,0 +1,134 @@
+@import "./theme.css";
+
+.details-page {
+    min-height: 100vh;
+    background: var(--background);
+    padding: 40px 20px;
+}
+
+.details-container {
+    max-width: 1000px;
+    margin: auto;
+}
+
+.details-image {
+    width: 100%;
+    height: 420px;
+    object-fit: cover;
+    border-radius: var(--radius-large);
+    border: 2px solid var(--primary);
+    box-shadow: var(--gold-shadow);
+}
+
+.details-title {
+    color: var(--primary);
+    font-size: 42px;
+    margin-top: 30px;
+}
+
+.details-category {
+    color: var(--text-secondary);
+    font-size: 18px;
+    margin-bottom: 25px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin: 30px 0;
+}
+
+.info-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-medium);
+    padding: 20px;
+    text-align: center;
+    box-shadow: var(--shadow);
+}
+
+.info-card h3 {
+    color: var(--primary);
+    margin-bottom: 10px;
+}
+
+.section {
+    background: var(--surface);
+    padding: 25px;
+    border-radius: var(--radius-medium);
+    margin-bottom: 25px;
+    box-shadow: var(--shadow);
+}
+
+.section h2 {
+    color: var(--primary);
+    margin-bottom: 15px;
+}
+
+.details-text {
+    color: var(--text);
+    white-space: pre-line;
+    line-height: 1.7;
+}
+
+.button-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.action-button {
+    background: var(--primary);
+    color: #111;
+    border: none;
+    padding: 14px 28px;
+    border-radius: var(--radius-small);
+    cursor: pointer;
+    font-weight: bold;
+    transition: var(--transition);
+}
+
+.action-button:hover {
+    background: var(--primary-hover);
+}
+
+.delete-button {
+    background: #b91c1c;
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: var(--radius-small);
+    cursor: pointer;
+    font-weight: bold;
+    transition: var(--transition);
+}
+
+.delete-button:hover {
+    background: #dc2626;
+}
+
+@media (max-width: 768px) {
+
+    .info-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .details-image {
+        height: 250px;
+    }
+
+    .details-title {
+        font-size: 30px;
+    }
+
+    .button-row {
+        flex-direction: column;
+    }
+
+    .action-button,
+    .delete-button {
+        width: 100%;
+    }
+}

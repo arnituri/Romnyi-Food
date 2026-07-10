@@ -1,0 +1,100 @@
+@import "./theme.css";
+
+.quick-actions{
+
+    display:flex;
+    flex-direction:column;
+
+    gap:25px;
+
+}
+
+.quick-title{
+
+    color:var(--primary);
+
+    font-size:32px;
+
+    margin:0;
+
+}
+
+.quick-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+
+    gap:22px;
+
+}
+
+.quick-card{
+
+    background:var(--surface);
+
+    border:2px solid var(--border);
+
+    border-radius:var(--radius-large);
+
+    padding:28px;
+
+    cursor:pointer;
+
+    transition:var(--transition);
+
+    text-align:left;
+
+    color:var(--text);
+
+    box-shadow:var(--shadow);
+
+}
+
+.quick-card:hover{
+
+    border-color:var(--primary);
+
+    transform:translateY(-6px);
+
+    box-shadow:var(--gold-shadow);
+
+}
+
+.quick-icon{
+
+    font-size:42px;
+
+    margin-bottom:18px;
+
+}
+
+.quick-card h3{
+
+    margin:0 0 10px;
+
+    color:var(--primary);
+
+    font-size:22px;
+
+}
+
+.quick-card p{
+
+    margin:0;
+
+    color:var(--text-secondary);
+
+    font-size:15px;
+
+}
+
+@media(max-width:768px){
+
+.quick-grid{
+
+grid-template-columns:1fr;
+
+}
+
+}

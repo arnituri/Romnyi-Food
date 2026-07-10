@@ -45,3 +45,19 @@ export function getRecipeById(id) {
 
   return recipes.find((recipe) => recipe.id === Number(id));
 }
+export function toggleFavorite(id) {
+  const recipes = getRecipes();
+
+  const newRecipes = recipes.map((recipe) => {
+    if (recipe.id === id) {
+      return {
+        ...recipe,
+        favorite: !recipe.favorite,
+      };
+    }
+
+    return recipe;
+  });
+
+  saveRecipes(newRecipes);
+}

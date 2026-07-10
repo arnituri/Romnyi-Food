@@ -27,12 +27,19 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+
       <Route path="/recipes" element={<Recipes />} />
+
       <Route path="/favorites" element={<Favorites />} />
+
+      {/* Új recept */}
       <Route path="/add" element={<AddRecipe />} />
+
+      {/* Recept szerkesztése */}
+      <Route path="/edit/:id" element={<AddRecipe />} />
+
       <Route path="/settings" element={<Settings />} />
 
-      {/* Egy adott recept megnyitása */}
       <Route path="/recipe/:id" element={<RecipeDetails />} />
     </Routes>
   );
