@@ -109,6 +109,40 @@
     background: #dc2626;
 }
 
+.delete-dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, .72);
+}
+
+.delete-dialog {
+    width: min(100%, 480px);
+    background: var(--surface);
+    border: 2px solid var(--primary);
+    border-radius: var(--radius-large);
+    padding: 30px;
+    box-shadow: var(--gold-shadow);
+}
+
+.delete-dialog h2 {
+    margin: 0;
+    color: var(--text);
+    font-size: 24px;
+    line-height: 1.4;
+}
+
+.delete-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 28px;
+}
+
 @media (max-width: 768px) {
 
     .info-grid {
@@ -130,5 +164,9 @@
     .action-button,
     .delete-button {
         width: 100%;
+    }
+
+    .delete-dialog-actions {
+        flex-direction: column;
     }
 }

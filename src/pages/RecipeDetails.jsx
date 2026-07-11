@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   getRecipeById,
@@ -11,6 +12,7 @@ import "../styles/RecipeDetails.css";
 function RecipeDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const recipe = getRecipeById(id);
 
@@ -40,15 +42,8 @@ function RecipeDetails() {
     window.location.reload();
   };
 
-  const handleDelete = () => {
-    const confirmDelete = window.confirm(
-      "Biztosan törölni szeretnéd ezt a receptet?"
-    );
-
-    if (!confirmDelete) return;
-
+  const confirmDelete = () => {
     deleteRecipe(recipe.id);
-
     navigate("/recipes");
   };
 
@@ -136,7 +131,7 @@ const handleEdit = () => {
 
           <button
             className="delete-button"
-            onClick={handleDelete}
+            onClick={() => setIsDeleteDialogOpen(true)}
           >
             🗑️ Törlés
           </button>
@@ -151,6 +146,32 @@ const handleEdit = () => {
         </div>
 
       </div>
+
+      {isDeleteDialogOpen && (
+        <div className="delete-dialog-backdrop">
+          <div
+            className="delete-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-dialog-title"
+          >
+            <h2 id="delete-dialog-title">Biztosan törölni szeretnéd ezt a receptet?</h2>
+
+            <div className="delete-dialog-actions">
+              <button
+                className="action-button"
+                onClick={() => setIsDeleteDialogOpen(false)}
+              >
+                Mégse
+              </button>
+
+              <button className="delete-button" onClick={confirmDelete}>
+                Törlés
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
