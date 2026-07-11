@@ -1,6 +1,8 @@
 import "../styles/QuickActions.css";
+import { useNavigate } from "react-router-dom";
 
 function QuickActions({ onRandomClick }) {
+  const navigate = useNavigate();
   const actions = [
     {
       id: "random",
@@ -65,7 +67,7 @@ function QuickActions({ onRandomClick }) {
                 return;
               }
 
-              window.location.href = action.path;
+              navigate(action.path);
 
             }}
           >

@@ -13,6 +13,9 @@ function RecipeDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(
+    () => getRecipeById(id)?.favorite ?? false
+  );
 
   const recipe = getRecipeById(id);
 
@@ -39,7 +42,7 @@ function RecipeDetails() {
 
   const handleFavorite = () => {
     toggleFavorite(recipe.id);
-    window.location.reload();
+    setIsFavorite((favorite) => !favorite);
   };
 
   const confirmDelete = () => {
@@ -117,7 +120,7 @@ const handleEdit = () => {
             className="action-button"
             onClick={handleFavorite}
           >
-            {recipe.favorite
+            {isFavorite
               ? "❤️ Kedvenc"
               : "🤍 Kedvencekhez"}
           </button>
