@@ -1,15 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { getRecipes } from "../services/recipeService";
 import RecipeCard from "../components/RecipeCard";
 import Header from "../components/Header";
 
 function Recipes() {
 
-  const [recipes, setRecipes] = useState([]);
-
-  useEffect(() => {
-    setRecipes(getRecipes());
-  }, []);
+  const [recipes] = useState(() => getRecipes());
 
   return (
     <div className="details-page">
