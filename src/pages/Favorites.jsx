@@ -1,21 +1,13 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { getRecipes } from "../services/recipeService";
 import RecipeCard from "../components/RecipeCard";
 import Header from "../components/Header";
 
 function Favorites() {
 
-  const [favorites, setFavorites] = useState([]);
-
-  useEffect(() => {
-
-    const recipes = getRecipes();
-
-    setFavorites(
-      recipes.filter(recipe => recipe.favorite)
-    );
-
-  }, []);
+  const [favorites] = useState(() =>
+    getRecipes().filter(recipe => recipe.favorite)
+  );
 
   return (
 
