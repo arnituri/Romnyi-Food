@@ -8,6 +8,7 @@ import Favorites from "./pages/Favorites";
 import AddRecipe from "./pages/AddRecipe";
 import Settings from "./pages/Settings";
 import RecipeDetails from "./pages/RecipeDetails";
+import CheatDay from "./pages/CheatDay";
 
 function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -39,6 +40,8 @@ function App() {
       <Route path="/edit/:id" element={<AddRecipe />} />
 
       <Route path="/settings" element={<Settings />} />
+
+      <Route path="/cheatday" element={<CheatDay />} />
 
       <Route path="/recipe/:id" element={<RecipeDetails />} />
     </Routes>
