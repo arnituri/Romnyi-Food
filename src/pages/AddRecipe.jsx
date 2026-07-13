@@ -38,40 +38,31 @@ function AddRecipe() {
   };
 
   const saveRecipe = () => {
-    if (
-      !name.trim() ||
-      !category ||
-      !calories ||
-      !ingredients.trim() ||
-      !instructions.trim()
-    ) {
-      alert("⚠️ Kérlek tölts ki minden kötelező mezőt!");
-      return;
-    }
-
     const recipe = {
-      ...existingRecipe,
-      id: existingRecipe?.id ?? Date.now(),
       name,
       image,
       category,
-      calories: Number(calories),
-      protein: Number(protein) || 0,
-      fat: Number(fat) || 0,
-      carbs: Number(carbs) || 0,
+      calories,
+      protein,
+      fat,
+      carbs,
       ingredients,
       instructions,
-      favorite: existingRecipe?.favorite ?? false,
-      createdAt: existingRecipe?.createdAt ?? new Date().toISOString(),
     };
 
-    if (isEditing) {
-      updateRecipe(recipe);
-      alert("Recipe updated successfully!");
+    const result = isEditing
+      ? updateRecipe({ ...recipe, id: existingRecipe.id })
+      : addRecipe(recipe);
+
+    if (!result.success) {
+      alert(`⚠️ ${result.message}`);
       return;
     }
 
-    addRecipe(recipe);
+    if (isEditing) {
+      alert("✅ A recept sikeresen frissítve lett!");
+      return;
+    }
 
     alert("✅ Recept sikeresen elmentve!");
 
@@ -90,9 +81,9 @@ function AddRecipe() {
     return (
       <div className="add-page">
         <div className="add-container">
-          <h1 className="add-title">Recipe not found.</h1>
+          <h1 className="add-title">A recept nem található.</h1>
           <button className="save-button" onClick={() => navigate("/recipes")}>
-            Back to recipes
+            Vissza a receptekhez
           </button>
         </div>
         <BottomNavigation />
@@ -105,7 +96,7 @@ function AddRecipe() {
       <div className="add-container">
 
         <h1 className="add-title">
-          ➕ Új recept
+          {isEditing ? "✏️ Recept szerkesztése" : "➕ Új recept"}
         </h1>
 
         <label className="image-upload">
@@ -154,6 +145,8 @@ function AddRecipe() {
         <input
           className="add-input"
           type="number"
+          min="0"
+          step="any"
           placeholder="🔥 Kalória"
           value={calories}
           onChange={(e) => setCalories(e.target.value)}
@@ -162,6 +155,8 @@ function AddRecipe() {
         <input
           className="add-input"
           type="number"
+          min="0"
+          step="any"
           placeholder="🥩 Fehérje (g)"
           value={protein}
           onChange={(e) => setProtein(e.target.value)}
@@ -170,6 +165,8 @@ function AddRecipe() {
         <input
           className="add-input"
           type="number"
+          min="0"
+          step="any"
           placeholder="🥑 Zsír (g)"
           value={fat}
           onChange={(e) => setFat(e.target.value)}
@@ -178,6 +175,8 @@ function AddRecipe() {
         <input
           className="add-input"
           type="number"
+          min="0"
+          step="any"
           placeholder="🍚 Szénhidrát (g)"
           value={carbs}
           onChange={(e) => setCarbs(e.target.value)}
