@@ -14,6 +14,8 @@ import { useAccessibleDialog } from "../hooks/useAccessibleDialog";
 import { useNotifications } from "../hooks/useNotifications";
 import "../styles/Settings.css";
 
+export const MAX_BACKUP_IMPORT_SIZE_BYTES = 10 * 1024 * 1024;
+
 function Settings() {
   const navigate = useNavigate();
   const notify = useNotifications();
@@ -53,6 +55,13 @@ function Settings() {
     event.target.value = "";
 
     if (!file) {
+      return;
+    }
+
+    if (file.size > MAX_BACKUP_IMPORT_SIZE_BYTES) {
+      notify.error(
+        "A kiválasztott biztonsági mentés túl nagy. A maximális engedélyezett fájlméret 10 MB."
+      );
       return;
     }
 
