@@ -44,6 +44,11 @@
     box-shadow: var(--gold-shadow);
 }
 
+.image-upload:focus-visible {
+    outline: 3px solid var(--primary);
+    outline-offset: 4px;
+}
+
 .image-upload div {
     text-align: center;
     color: var(--primary);

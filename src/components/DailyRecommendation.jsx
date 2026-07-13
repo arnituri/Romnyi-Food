@@ -46,7 +46,13 @@ function DailyRecommendation() {
       {recipe ? (
         <Link className="daily-card" to={`/recipe/${recipe.id}`} aria-label={`${recipe.name} recept megnyitása`}>
           <div className="daily-image">
-            <RecipeImage src={recipe.image} alt="" className="daily-photo" fallbackClassName="daily-photo-fallback" />
+            <RecipeImage
+              src={recipe.image}
+              alt=""
+              decorative
+              className="daily-photo"
+              fallbackClassName="daily-photo-fallback"
+            />
           </div>
 
           <div className="daily-content">

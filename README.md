@@ -39,6 +39,10 @@ npm run lint
 npm run build
 ```
 
+## Telepítési megjegyzés
+
+Az alkalmazás `BrowserRouter`-t használ. Production telepítéskor a választott hosztingnak minden nem statikus útvonalat (például `/recipe/:id`) az `index.html`-re kell visszaadnia, hogy frissítéskor is a React Router kezelhesse az oldalt. A hoszting- és Android/WebView-csomagolás nincs ebben a webes tárolóban kiválasztva, ezért platformfüggetlen rewrite konfigurációt szándékosan nem tartalmaz.
+
 ## Adattárolás és adatbiztonság
 
 Az alkalmazás a böngésző `localStorage` tárhelyét használja; nincs külön szerver vagy adatbázis.

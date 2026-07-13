@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import { makeRecipe } from "../../test/setup";
@@ -55,5 +55,20 @@ describe("recipe nutrition display", () => {
     );
 
     expect(screen.getByText(/Ebéd.*0 kcal/)).toBeInTheDocument();
+  });
+
+  it("keeps an unavailable daily recommendation image decorative", () => {
+    getDailyRecommendationMock.mockReturnValue(makeRecipe({ image: "invalid-image-url" }));
+
+    const { container } = render(
+      <MemoryRouter>
+        <DailyRecommendation />
+      </MemoryRouter>,
+    );
+
+    fireEvent.error(container.querySelector("img"));
+
+    expect(container.querySelector(".daily-photo-fallback")).toHaveAttribute("aria-hidden", "true");
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
   });
 });

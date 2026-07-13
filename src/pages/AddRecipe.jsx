@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   addRecipe,
@@ -35,6 +35,7 @@ function AddRecipe() {
   const { id } = useParams();
   const navigate = useNavigate();
   const notify = useNotifications();
+  const imageInputRef = useRef(null);
   const isEditing = Boolean(id);
   const [existingRecipe] = useState(() => (isEditing ? getRecipeById(id) : null));
   const [initialValues] = useState(() => getFormValues(existingRecipe));
@@ -146,7 +147,12 @@ function AddRecipe() {
       <div className="add-container">
         <h1 className="add-title">{isEditing ? "✏️ Recept szerkesztése" : "➕ Új recept"}</h1>
 
-        <label className="image-upload">
+        <button
+          className="image-upload"
+          type="button"
+          aria-label="Receptkép kiválasztása"
+          onClick={() => imageInputRef.current?.click()}
+        >
           {formValues.image ? (
             <RecipeImage
               src={formValues.image}
@@ -160,8 +166,16 @@ function AddRecipe() {
               {isProcessingImage ? "Kép feldolgozása…" : "Kép kiválasztása"}
             </div>
           )}
-          <input className="hidden-input" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Receptkép kiválasztása" onChange={handleImageChange} />
-        </label>
+        </button>
+        <input
+          ref={imageInputRef}
+          className="hidden-input"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          aria-hidden="true"
+          tabIndex="-1"
+          onChange={handleImageChange}
+        />
 
         <input className="add-input" aria-label="Recept neve" placeholder="🍽️ Recept neve" value={formValues.name} onChange={(event) => updateField("name", event.target.value)} />
         <select className="add-input" aria-label="Kategória" value={formValues.category} onChange={(event) => updateField("category", event.target.value)}>
