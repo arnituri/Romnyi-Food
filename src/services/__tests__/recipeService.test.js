@@ -50,6 +50,17 @@ describe('recipeService', () => {
     ]);
   });
 
+  it('keeps recipes with impossible legacy dates while removing the unusable date', () => {
+    storeRecipes([makeRecipe({ createdAt: '2026-02-30T12:00:00.000Z' })]);
+
+    expect(getRecipes()).toEqual([
+      expect.objectContaining({ id: 'recipe-1', createdAt: null }),
+    ]);
+
+    expect(updateRecipe(makeRecipe({ name: 'Frissített recept', createdAt: null })))
+      .toMatchObject({ success: true, recipe: { createdAt: null } });
+  });
+
   it('adds a valid normalized recipe with a unique id', () => {
     const result = addRecipe({ ...makeRecipe({ id: undefined, name: '  Új recept  ' }) });
 

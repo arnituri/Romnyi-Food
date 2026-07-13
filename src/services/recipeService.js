@@ -1,5 +1,6 @@
 import { readStorageValue, setStorageValue } from "./storageService.js";
 import { normalizeSupportedRecipeCategory } from "../constants/recipeCategories.js";
+import { isValidRecipeCreatedAt } from "../utils/recipeDate.js";
 
 export const RECIPE_STORAGE_KEY = "recipes";
 export const RECIPE_RECOVERY_KEY_PREFIX = "romnyi-food-recipes-recovery-";
@@ -32,11 +33,11 @@ function normalizeNutritionValue(value) {
 }
 
 function normalizeCreatedAt(value) {
-  if (typeof value !== "string" || Number.isNaN(new Date(value).getTime())) {
+  if (!isValidRecipeCreatedAt(value)) {
     return null;
   }
 
-  return value;
+  return value.trim();
 }
 
 function isValidRecipeId(value) {
@@ -219,10 +220,9 @@ function prepareRecipeForSave(recipe, existingRecipe, recipes) {
       ingredients: ingredients.value,
       instructions: instructions.value,
       favorite: existingRecipe?.favorite ?? recipe.favorite === true,
-      createdAt:
-        existingRecipe?.createdAt ??
-        normalizeCreatedAt(recipe.createdAt) ??
-        new Date().toISOString(),
+      createdAt: existingRecipe
+        ? existingRecipe.createdAt
+        : normalizeCreatedAt(recipe.createdAt) ?? new Date().toISOString(),
     },
   };
 }
