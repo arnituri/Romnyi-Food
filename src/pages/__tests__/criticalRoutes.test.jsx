@@ -3,6 +3,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 import AddRecipe from '../AddRecipe';
 import NotFound from '../NotFound';
+import SearchBar from '../../components/SearchBar';
 
 function renderRoute(path, element) {
   return render(
@@ -37,5 +38,11 @@ describe('critical routes', () => {
 
     expect(screen.getByRole('heading', { name: /a recept nem található/i })).toBeInTheDocument();
     expect(screen.queryByPlaceholderText(/recept neve/i)).not.toBeInTheDocument();
+  });
+
+  it('provides the shared recipe search with an accessible Hungarian name', () => {
+    render(<SearchBar />);
+
+    expect(screen.getByLabelText('Receptek keresése')).toBeInTheDocument();
   });
 });
