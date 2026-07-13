@@ -5,6 +5,8 @@ import { NotificationProvider } from '../NotificationProvider';
 import { useNotifications } from '../../hooks/useNotifications';
 import Home from '../../pages/Home';
 
+const originalMatchMedia = window.matchMedia;
+
 function NotificationTrigger({ type = 'success', message = 'Sikeres művelet' }) {
   const notify = useNotifications();
 
@@ -21,6 +23,12 @@ function renderNotifications(element) {
 
 afterEach(() => {
   vi.useRealTimers();
+
+  if (originalMatchMedia) {
+    Object.defineProperty(window, 'matchMedia', { configurable: true, value: originalMatchMedia });
+  } else {
+    delete window.matchMedia;
+  }
 });
 
 describe('NotificationProvider', () => {
@@ -49,6 +57,20 @@ describe('NotificationProvider', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Értesítés küldése' }));
     act(() => vi.advanceTimersByTime(5000));
 
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  it('keeps notifications functional when reduced motion is preferred', () => {
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: vi.fn().mockReturnValue({ matches: true }),
+    });
+    renderNotifications(<NotificationTrigger />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Értesítés küldése' }));
+
+    expect(screen.getByRole('status')).toHaveTextContent('Sikeres művelet');
+    fireEvent.click(screen.getByRole('button', { name: 'Értesítés bezárása' }));
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 
