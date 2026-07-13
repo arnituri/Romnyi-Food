@@ -2,7 +2,7 @@
 
 .not-found-page {
   min-height: 100vh;
-  padding-bottom: 118px;
+  padding-bottom: var(--bottom-navigation-content-offset);
   background: var(--background);
 }
 

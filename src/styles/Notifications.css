@@ -1,7 +1,7 @@
 .notification-viewport {
   position: fixed;
   right: max(16px, env(safe-area-inset-right));
-  bottom: calc(98px + env(safe-area-inset-bottom));
+  bottom: var(--bottom-navigation-notice-offset);
   z-index: 2100;
   display: grid;
   width: min(390px, calc(100vw - 32px));
@@ -89,7 +89,7 @@
 @media (max-width: 540px) {
   .notification-viewport {
     right: 12px;
-    bottom: calc(90px + env(safe-area-inset-bottom));
+    bottom: var(--bottom-navigation-notice-offset);
     width: calc(100vw - 24px);
   }
 }

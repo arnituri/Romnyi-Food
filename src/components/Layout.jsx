@@ -16,7 +16,7 @@ function Layout({ title, children }) {
           maxWidth: "1200px",
           margin: "0 auto",
           padding: "25px",
-          paddingBottom: "110px",
+          paddingBottom: "var(--bottom-navigation-compact-content-offset)",
         }}
       >
         {children}

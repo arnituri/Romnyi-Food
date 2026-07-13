@@ -67,6 +67,23 @@
   --radius-small: 10px;
   --radius-medium: 18px;
   --radius-large: 26px;
+  --bottom-navigation-height: 82px;
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --bottom-navigation-total-height: calc(
+    var(--bottom-navigation-height) + var(--safe-area-bottom)
+  );
+  --bottom-navigation-content-offset: calc(
+    var(--bottom-navigation-total-height) + 36px
+  );
+  --bottom-navigation-compact-content-offset: calc(
+    var(--bottom-navigation-total-height) + 28px
+  );
+  --bottom-navigation-spacious-content-offset: calc(
+    var(--bottom-navigation-total-height) + 46px
+  );
+  --bottom-navigation-notice-offset: calc(
+    var(--bottom-navigation-total-height) + 16px
+  );
   --transition: .25s ease;
   --font-display: Georgia, "Times New Roman", serif;
 }

@@ -4,7 +4,7 @@
   position: fixed;
   z-index: 1200;
   right: 20px;
-  bottom: 102px;
+  bottom: var(--bottom-navigation-notice-offset);
   width: min(calc(100% - 40px), 460px);
   padding: 16px 18px;
   border: 1px solid var(--border-strong);
@@ -18,7 +18,7 @@
 @media (max-width: 600px) {
   .recipe-recovery-notice {
     right: 16px;
-    bottom: 98px;
+    bottom: var(--bottom-navigation-notice-offset);
     width: calc(100% - 32px);
   }
 }

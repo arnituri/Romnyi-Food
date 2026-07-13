@@ -3,7 +3,7 @@
 .details-page {
     min-height: 100vh;
     background: var(--background);
-    padding: 40px 20px 118px;
+    padding: 40px 20px var(--bottom-navigation-content-offset);
 }
 
 .details-container {
