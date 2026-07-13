@@ -26,6 +26,16 @@
     box-shadow: var(--gold-shadow);
 }
 
+.details-image.recipe-image-fallback {
+    display: grid;
+    place-items: center;
+    color: var(--primary);
+    background:
+        radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--primary) 18%, transparent), transparent 52%),
+        var(--surface-elevated);
+    font-size: 84px;
+}
+
 .details-title {
     color: var(--primary);
     font-size: 42px;

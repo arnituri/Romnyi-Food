@@ -8,6 +8,7 @@ import {
 
 import Header from "../components/Header";
 import BottomNavigation from "../components/BottomNavigation";
+import RecipeImage from "../components/RecipeImage";
 import "../styles/RecipeDetails.css";
 
 function RecipeDetails() {
@@ -62,11 +63,7 @@ const handleEdit = () => {
 
       <div className="details-container">
 
-        <img
-          src={recipe.image || "https://placehold.co/1200x700"}
-          alt={recipe.name}
-          className="details-image"
-        />
+        <RecipeImage src={recipe.image} alt={recipe.name} className="details-image" />
 
         <h1 className="details-title">
           {recipe.name}

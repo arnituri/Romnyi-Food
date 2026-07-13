@@ -1,16 +1,13 @@
 import "../styles/RecipeCard.css";
 import { useNavigate } from "react-router-dom";
+import RecipeImage from "./RecipeImage";
 
 function RecipeCard({ recipe }) {
   const navigate = useNavigate();
 
   return (
     <div className="recipe-card">
-      <img
-        src={recipe.image || "https://placehold.co/600x400"}
-        alt={recipe.name}
-        className="recipe-image"
-      />
+      <RecipeImage src={recipe.image} alt={recipe.name} className="recipe-image" />
 
       <div className="recipe-content">
 

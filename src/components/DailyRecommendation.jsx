@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getDailyRecommendation } from "../services/dailyRecommendationService";
+import RecipeImage from "./RecipeImage";
 import "../styles/DailyRecommendation.css";
 
 function DailyRecommendation() {
@@ -8,17 +9,11 @@ function DailyRecommendation() {
 
   useEffect(() => {
     const now = new Date();
-    const nextDay = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate() + 1
-    );
+    const nextDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
     let intervalId;
     const timeoutId = window.setTimeout(() => {
       setRecipe(getDailyRecommendation());
-      intervalId = window.setInterval(() => {
-        setRecipe(getDailyRecommendation());
-      }, 24 * 60 * 60 * 1000);
+      intervalId = window.setInterval(() => setRecipe(getDailyRecommendation()), 24 * 60 * 60 * 1000);
     }, nextDay.getTime() - now.getTime());
 
     return () => {
@@ -32,17 +27,9 @@ function DailyRecommendation() {
       <h2 className="daily-title">Mai ajánlat</h2>
 
       {recipe ? (
-        <Link
-          className="daily-card"
-          to={`/recipe/${recipe.id}`}
-          aria-label={`${recipe.name} recept megnyitása`}
-        >
+        <Link className="daily-card" to={`/recipe/${recipe.id}`} aria-label={`${recipe.name} recept megnyitása`}>
           <div className="daily-image">
-            {recipe.image ? (
-              <img src={recipe.image} alt="" />
-            ) : (
-              <span aria-hidden="true">🍽️</span>
-            )}
+            <RecipeImage src={recipe.image} alt="" className="daily-photo" fallbackClassName="daily-photo-fallback" />
           </div>
 
           <div className="daily-content">

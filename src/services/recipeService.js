@@ -2,8 +2,17 @@ export const RECIPE_STORAGE_KEY = "recipes";
 const RECIPE_RECOVERY_KEY_PREFIX = "romnyi-food-recipes-recovery-";
 const RECIPE_RECOVERED_EVENT = "romnyi-food-recipes-recovered";
 const MAX_NUTRITION_VALUE = 1000000;
+const MAX_RECIPE_STORAGE_BYTES = 4 * 1024 * 1024;
 
 let recoveryNoticePending = false;
+
+export class RecipeStorageError extends Error {
+  constructor(code) {
+    super(code);
+    this.name = "RecipeStorageError";
+    this.code = code;
+  }
+}
 
 function normalizeText(value) {
   return typeof value === "string" ? value : "";
@@ -86,6 +95,18 @@ function getValidationMessage(error) {
   };
 
   return messages[error] || "A recept adatai nem érvényesek.";
+}
+
+function getStorageErrorMessage(error) {
+  if (error instanceof RecipeStorageError || error?.name === "QuotaExceededError") {
+    return "A képpel együtt túl sok adatot kellene menteni a készüléken. Válassz kisebb képet, vagy törölj néhány régi receptet.";
+  }
+
+  return "A recept mentése nem sikerült. A korábbi adatok változatlanok maradtak.";
+}
+
+function getUtf8ByteSize(value) {
+  return new Blob([value]).size;
 }
 
 function generateFallbackId() {
@@ -336,10 +357,21 @@ export function saveRecipes(recipes) {
     throw new Error("INVALID_RECIPE_COLLECTION");
   }
 
-  localStorage.setItem(
-    RECIPE_STORAGE_KEY,
-    JSON.stringify(recipes)
-  );
+  const serializedRecipes = JSON.stringify(recipes);
+
+  if (getUtf8ByteSize(serializedRecipes) > MAX_RECIPE_STORAGE_BYTES) {
+    throw new RecipeStorageError("STORAGE_LIMIT");
+  }
+
+  try {
+    localStorage.setItem(RECIPE_STORAGE_KEY, serializedRecipes);
+  } catch (error) {
+    if (error?.name === "QuotaExceededError" || error?.code === 22) {
+      throw new RecipeStorageError("STORAGE_LIMIT");
+    }
+
+    throw error;
+  }
 }
 
 export function addRecipe(recipe) {
@@ -353,7 +385,11 @@ export function addRecipe(recipe) {
     };
   }
 
-  saveRecipes([...recipes, preparedRecipe.recipe]);
+  try {
+    saveRecipes([...recipes, preparedRecipe.recipe]);
+  } catch (error) {
+    return { success: false, error: "STORAGE_LIMIT", message: getStorageErrorMessage(error) };
+  }
 
   return { success: true, recipe: preparedRecipe.recipe };
 }
@@ -387,7 +423,11 @@ export function updateRecipe(updatedRecipe) {
       : recipe
   );
 
-  saveRecipes(updatedRecipes);
+  try {
+    saveRecipes(updatedRecipes);
+  } catch (error) {
+    return { success: false, error: "STORAGE_LIMIT", message: getStorageErrorMessage(error) };
+  }
 
   return { success: true, recipe: preparedRecipe.recipe };
 }

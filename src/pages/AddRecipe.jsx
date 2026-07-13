@@ -5,6 +5,7 @@ import {
   getRecipeById,
   updateRecipe,
 } from "../services/recipeService";
+import { optimizeRecipeImage } from "../services/imageService";
 import BottomNavigation from "../components/BottomNavigation";
 import "../styles/AddRecipe.css";
 
@@ -22,22 +23,28 @@ function AddRecipe() {
   const [carbs, setCarbs] = useState(String(existingRecipe?.carbs ?? ""));
   const [ingredients, setIngredients] = useState(existingRecipe?.ingredients || "");
   const [instructions, setInstructions] = useState(existingRecipe?.instructions || "");
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
+  const handleImageChange = async (event) => {
+    const file = event.target.files[0];
 
     if (!file) return;
 
-    const reader = new FileReader();
+    setIsProcessingImage(true);
 
-    reader.onload = () => {
-      setImage(reader.result);
-    };
-
-    reader.readAsDataURL(file);
+    try {
+      setImage(await optimizeRecipeImage(file));
+    } catch (error) {
+      alert(`⚠️ ${error.message || "A kép feldolgozása nem sikerült."}`);
+    } finally {
+      setIsProcessingImage(false);
+      event.target.value = "";
+    }
   };
 
   const saveRecipe = () => {
+    if (isProcessingImage) return;
+
     const recipe = {
       name,
       image,
@@ -65,7 +72,6 @@ function AddRecipe() {
     }
 
     alert("✅ Recept sikeresen elmentve!");
-
     setName("");
     setImage("");
     setCategory("");
@@ -94,117 +100,53 @@ function AddRecipe() {
   return (
     <div className="add-page">
       <div className="add-container">
-
         <h1 className="add-title">
           {isEditing ? "✏️ Recept szerkesztése" : "➕ Új recept"}
         </h1>
 
         <label className="image-upload">
-
           {image ? (
             <img src={image} alt="Recept előnézet" />
           ) : (
             <div>
               📷
               <br />
-              Kép kiválasztása
+              {isProcessingImage ? "Kép feldolgozása…" : "Kép kiválasztása"}
             </div>
           )}
 
           <input
             className="hidden-input"
             type="file"
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp"
             onChange={handleImageChange}
           />
-
         </label>
 
-        <input
-          className="add-input"
-          placeholder="🍽️ Recept neve"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
+        <input className="add-input" placeholder="🍽️ Recept neve" value={name} onChange={(event) => setName(event.target.value)} />
 
-        <select
-          className="add-input"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-        >
+        <select className="add-input" value={category} onChange={(event) => setCategory(event.target.value)}>
           <option value="">🏷️ Válassz kategóriát</option>
           <option value="Reggeli">🍳 Reggeli</option>
-          <option value="Ebéd">🥘 Ebéd</option>
-          <option value="Vacsora">🍝 Vacsora</option>
+          <option value="Ebéd">🍲 Ebéd</option>
+          <option value="Vacsora">🍽️ Vacsora</option>
           <option value="Saláta">🥗 Saláta</option>
           <option value="Desszert">🍰 Desszert</option>
           <option value="Ital">🥤 Ital</option>
-          <option value="Snack">🥜 Snack</option>
+          <option value="Snack">🍿 Snack</option>
         </select>
 
-        <input
-          className="add-input"
-          type="number"
-          min="0"
-          step="any"
-          placeholder="🔥 Kalória"
-          value={calories}
-          onChange={(e) => setCalories(e.target.value)}
-        />
+        <input className="add-input" type="number" min="0" step="any" placeholder="🔥 Kalória" value={calories} onChange={(event) => setCalories(event.target.value)} />
+        <input className="add-input" type="number" min="0" step="any" placeholder="🥩 Fehérje (g)" value={protein} onChange={(event) => setProtein(event.target.value)} />
+        <input className="add-input" type="number" min="0" step="any" placeholder="🥑 Zsír (g)" value={fat} onChange={(event) => setFat(event.target.value)} />
+        <input className="add-input" type="number" min="0" step="any" placeholder="🍚 Szénhidrát (g)" value={carbs} onChange={(event) => setCarbs(event.target.value)} />
 
-        <input
-          className="add-input"
-          type="number"
-          min="0"
-          step="any"
-          placeholder="🥩 Fehérje (g)"
-          value={protein}
-          onChange={(e) => setProtein(e.target.value)}
-        />
+        <textarea className="add-textarea" rows="6" placeholder="🥕 Hozzávalók" value={ingredients} onChange={(event) => setIngredients(event.target.value)} />
+        <textarea className="add-textarea" rows="8" placeholder="👨‍🍳 Elkészítés" value={instructions} onChange={(event) => setInstructions(event.target.value)} />
 
-        <input
-          className="add-input"
-          type="number"
-          min="0"
-          step="any"
-          placeholder="🥑 Zsír (g)"
-          value={fat}
-          onChange={(e) => setFat(e.target.value)}
-        />
-
-        <input
-          className="add-input"
-          type="number"
-          min="0"
-          step="any"
-          placeholder="🍚 Szénhidrát (g)"
-          value={carbs}
-          onChange={(e) => setCarbs(e.target.value)}
-        />
-
-        <textarea
-          className="add-textarea"
-          rows="6"
-          placeholder="🥕 Hozzávalók"
-          value={ingredients}
-          onChange={(e) => setIngredients(e.target.value)}
-        />
-
-        <textarea
-          className="add-textarea"
-          rows="8"
-          placeholder="👨‍🍳 Elkészítés"
-          value={instructions}
-          onChange={(e) => setInstructions(e.target.value)}
-        />
-
-        <button
-          className="save-button"
-          onClick={saveRecipe}
-        >
-          💾 Recept mentése
+        <button className="save-button" onClick={saveRecipe} disabled={isProcessingImage}>
+          {isProcessingImage ? "Kép feldolgozása…" : "💾 Recept mentése"}
         </button>
-
       </div>
       <BottomNavigation />
     </div>

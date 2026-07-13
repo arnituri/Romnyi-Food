@@ -113,6 +113,12 @@ select.add-input:focus {
     transform: scale(.98);
 }
 
+.save-button:disabled {
+    cursor: wait;
+    opacity: .72;
+    transform: none;
+}
+
 @media (max-width:768px){
 
     .add-container{
