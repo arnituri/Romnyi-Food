@@ -2,6 +2,7 @@ import { useState } from "react";
 import { getRecipes } from "../services/recipeService";
 import RecipeCard from "../components/RecipeCard";
 import Header from "../components/Header";
+import BottomNavigation from "../components/BottomNavigation";
 
 function Favorites() {
 
@@ -43,6 +44,8 @@ function Favorites() {
         )}
 
       </div>
+
+      <BottomNavigation />
 
     </div>
 

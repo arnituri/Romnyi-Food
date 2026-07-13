@@ -5,6 +5,7 @@ import {
   getRecipeById,
   updateRecipe,
 } from "../services/recipeService";
+import BottomNavigation from "../components/BottomNavigation";
 import "../styles/AddRecipe.css";
 
 function AddRecipe() {
@@ -94,6 +95,7 @@ function AddRecipe() {
             Back to recipes
           </button>
         </div>
+        <BottomNavigation />
       </div>
     );
   }
@@ -205,6 +207,7 @@ function AddRecipe() {
         </button>
 
       </div>
+      <BottomNavigation />
     </div>
   );
 }

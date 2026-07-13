@@ -3,7 +3,7 @@
 .add-page {
     min-height: 100vh;
     background: var(--background);
-    padding: 50px 20px;
+    padding: 50px 20px 128px;
 }
 
 .add-container {

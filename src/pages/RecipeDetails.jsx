@@ -7,6 +7,7 @@ import {
 } from "../services/recipeService";
 
 import Header from "../components/Header";
+import BottomNavigation from "../components/BottomNavigation";
 import "../styles/RecipeDetails.css";
 
 function RecipeDetails() {
@@ -36,6 +37,7 @@ function RecipeDetails() {
             ⬅️ Vissza
           </button>
         </div>
+        <BottomNavigation />
       </div>
     );
   }
@@ -175,6 +177,7 @@ const handleEdit = () => {
           </div>
         </div>
       )}
+      <BottomNavigation />
     </div>
   );
 }
