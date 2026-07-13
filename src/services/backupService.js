@@ -6,6 +6,7 @@ import {
 import {
   CHEAT_DAY_RESULTS_STORAGE_KEY,
   CHEAT_DAY_SCHEDULES_STORAGE_KEY,
+  getCheatDayBackupData,
   isValidCheatDayBackupData,
 } from "./cheatDayService";
 import {
@@ -24,20 +25,6 @@ const RESTORE_KEYS = [
   CHEAT_DAY_SCHEDULES_STORAGE_KEY,
   CHEAT_DAY_RESULTS_STORAGE_KEY,
 ];
-
-function readOptionalData(key) {
-  const value = localStorage.getItem(key);
-
-  if (!value) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(value);
-  } catch {
-    return null;
-  }
-}
 
 function serializeOptionalData(value) {
   return value === null ? null : JSON.stringify(value);
@@ -93,10 +80,7 @@ export function createBackup() {
     data: {
       recipes: getRecipes(),
       theme: getTheme(),
-      cheatDay: {
-        schedules: readOptionalData(CHEAT_DAY_SCHEDULES_STORAGE_KEY),
-        results: readOptionalData(CHEAT_DAY_RESULTS_STORAGE_KEY),
-      },
+      cheatDay: getCheatDayBackupData(),
     },
   };
 }

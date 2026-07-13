@@ -47,12 +47,44 @@ function CheatDay() {
     };
   }, []);
 
+  useEffect(() => {
+    let nextDayTimer;
+
+    const refreshForNewLocalDay = () => {
+      const nextResult = getTodayCheatDayResult();
+      setResult(nextResult);
+      setWheelRotation(nextResult ? -nextResult.segmentIndex * 60 : 0);
+      setShowConfetti(false);
+
+      const now = new Date();
+      const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      nextDayTimer = window.setTimeout(
+        refreshForNewLocalDay,
+        Math.max(1000, nextMidnight.getTime() - now.getTime())
+      );
+    };
+
+    const now = new Date();
+    const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    nextDayTimer = window.setTimeout(
+      refreshForNewLocalDay,
+      Math.max(1000, nextMidnight.getTime() - now.getTime())
+    );
+
+    return () => clearTimeout(nextDayTimer);
+  }, []);
+
   const handleSpin = () => {
     if (result || isSpinning) {
       return;
     }
 
     const nextResult = createTodayCheatDayResult();
+    if (!nextResult) {
+      alert("⚠️ A mai pörgetést nem sikerült biztonságosan elmenteni. Próbáld újra.");
+      return;
+    }
+
     const currentRotation = ((wheelRotation % 360) + 360) % 360;
     const targetRotation = (-nextResult.segmentIndex * 60 + 360) % 360;
     const rotationToTarget = (targetRotation - currentRotation + 360) % 360;
