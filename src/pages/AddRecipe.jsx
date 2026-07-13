@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { addRecipe, getRecipeById, updateRecipe } from "../services/recipeService";
 import { optimizeRecipeImage } from "../services/imageService";
 import BottomNavigation from "../components/BottomNavigation";
+import RecipeImage from "../components/RecipeImage";
 import "../styles/AddRecipe.css";
 
 function getFormValues(recipe) {
@@ -116,7 +117,12 @@ function AddRecipe() {
 
         <label className="image-upload">
           {formValues.image ? (
-            <img src={formValues.image} alt="Recept előnézet" />
+            <RecipeImage
+              src={formValues.image}
+              alt="Recept előnézet"
+              className="image-upload-preview"
+              fallbackClassName="image-upload-preview-fallback"
+            />
           ) : (
             <div>
               📷<br />
