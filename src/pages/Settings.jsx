@@ -63,10 +63,18 @@ function Settings() {
 
   const confirmAction = () => {
     if (pendingAction?.type === "restore") {
-      restoreBackup(pendingAction.backup);
-      setTheme(getTheme());
-      setPendingAction(null);
-      navigate("/recipes", { replace: true });
+      try {
+        restoreBackup(pendingAction.backup);
+        setTheme(getTheme());
+        setPendingAction(null);
+        navigate("/recipes", { replace: true });
+      } catch {
+        setPendingAction(null);
+        setNotice({
+          type: "error",
+          text: "A biztonsági mentés visszaállítása nem sikerült. A meglévő adataid változatlanok maradtak.",
+        });
+      }
       return;
     }
 

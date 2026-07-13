@@ -26,6 +26,60 @@ function normalizeCreatedAt(value) {
   return value;
 }
 
+function isValidRecipeId(value) {
+  return (
+    (typeof value === "number" && Number.isFinite(value)) ||
+    (typeof value === "string" && value.trim().length > 0)
+  );
+}
+
+function isValidBackupNutritionValue(value) {
+  return value === null || (typeof value === "number" && Number.isFinite(value) && value >= 0);
+}
+
+export function isValidRecipeRecord(recipe) {
+  return (
+    recipe &&
+    typeof recipe === "object" &&
+    !Array.isArray(recipe) &&
+    isValidRecipeId(recipe.id) &&
+    typeof recipe.name === "string" &&
+    typeof recipe.image === "string" &&
+    typeof recipe.category === "string" &&
+    isValidBackupNutritionValue(recipe.calories) &&
+    isValidBackupNutritionValue(recipe.protein) &&
+    isValidBackupNutritionValue(recipe.fat) &&
+    isValidBackupNutritionValue(recipe.carbs) &&
+    typeof recipe.ingredients === "string" &&
+    typeof recipe.instructions === "string" &&
+    typeof recipe.favorite === "boolean" &&
+    (recipe.createdAt === null || normalizeCreatedAt(recipe.createdAt) !== null)
+  );
+}
+
+export function isValidRecipeCollection(recipes) {
+  if (!Array.isArray(recipes)) {
+    return false;
+  }
+
+  const ids = new Set();
+
+  return recipes.every((recipe) => {
+    if (!isValidRecipeRecord(recipe)) {
+      return false;
+    }
+
+    const id = String(recipe.id);
+
+    if (ids.has(id)) {
+      return false;
+    }
+
+    ids.add(id);
+    return true;
+  });
+}
+
 function normalizeId(value, index, usedIds) {
   const baseId =
     (typeof value === "number" && Number.isFinite(value)) ||

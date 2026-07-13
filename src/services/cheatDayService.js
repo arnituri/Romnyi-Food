@@ -32,6 +32,93 @@ function getWeekKey(year, month, day) {
   return `${date.getUTCFullYear()}-${week}`;
 }
 
+function isPlainObject(value) {
+  return value && typeof value === "object" && !Array.isArray(value);
+}
+
+function isValidDateKey(dateKey) {
+  if (typeof dateKey !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) {
+    return false;
+  }
+
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+
+  return (
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day
+  );
+}
+
+function isValidMonthKey(monthKey) {
+  return typeof monthKey === "string" && /^\d{4}-\d{2}$/.test(monthKey) && isValidDateKey(`${monthKey}-01`);
+}
+
+function isValidSchedule(monthKey, days) {
+  if (!isValidMonthKey(monthKey) || !Array.isArray(days) || days.length !== 4) {
+    return false;
+  }
+
+  const [year, month] = monthKey.split("-").map(Number);
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const uniqueDays = new Set(days);
+  const uniqueWeeks = new Set(days.map((day) => getWeekKey(year, month - 1, day)));
+
+  return (
+    uniqueDays.size === 4 &&
+    uniqueWeeks.size === 4 &&
+    days.every((day) => Number.isInteger(day) && day >= 1 && day <= daysInMonth) &&
+    !days.some((day, index) =>
+      days.slice(index + 1).some((otherDay) => Math.abs(day - otherDay) === 1)
+    )
+  );
+}
+
+export function isValidCheatDayBackupData(cheatDay) {
+  if (!isPlainObject(cheatDay)) {
+    return false;
+  }
+
+  const { schedules, results } = cheatDay;
+
+  if (
+    (schedules !== null && !isPlainObject(schedules)) ||
+    (results !== null && !isPlainObject(results))
+  ) {
+    return false;
+  }
+
+  if (schedules && !Object.entries(schedules).every(([monthKey, days]) => isValidSchedule(monthKey, days))) {
+    return false;
+  }
+
+  if (!results) {
+    return true;
+  }
+
+  return Object.entries(results).every(([dateKey, result]) => {
+    if (!isValidDateKey(dateKey) || !isPlainObject(result)) {
+      return false;
+    }
+
+    const { isWinner, segmentIndex, spunAt } = result;
+    const monthKey = dateKey.slice(0, 7);
+    const day = Number(dateKey.slice(-2));
+    const schedule = schedules?.[monthKey];
+
+    return (
+      Array.isArray(schedule) &&
+      typeof isWinner === "boolean" &&
+      Number.isInteger(segmentIndex) &&
+      (isWinner ? segmentIndex === 0 : segmentIndex >= 1 && segmentIndex <= 5) &&
+      typeof spunAt === "string" &&
+      !Number.isNaN(new Date(spunAt).getTime()) &&
+      isWinner === schedule.includes(day)
+    );
+  });
+}
+
 function createMonthlySchedule(year, month) {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const days = Array.from({ length: daysInMonth }, (_, index) => index + 1);

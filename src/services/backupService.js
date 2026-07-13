@@ -1,17 +1,29 @@
-import { getRecipes, RECIPE_STORAGE_KEY, saveRecipes } from "./recipeService";
+import {
+  getRecipes,
+  isValidRecipeCollection,
+  RECIPE_STORAGE_KEY,
+} from "./recipeService";
 import {
   CHEAT_DAY_RESULTS_STORAGE_KEY,
   CHEAT_DAY_SCHEDULES_STORAGE_KEY,
+  isValidCheatDayBackupData,
 } from "./cheatDayService";
 import {
-  applyTheme,
+  applyThemeToDocument,
   getTheme,
+  isSupportedTheme,
   resetTheme,
   THEME_STORAGE_KEY,
 } from "./themeService";
 
 const BACKUP_FORMAT = "romnyi-food-backup";
 const BACKUP_VERSION = 1;
+const RESTORE_KEYS = [
+  RECIPE_STORAGE_KEY,
+  THEME_STORAGE_KEY,
+  CHEAT_DAY_SCHEDULES_STORAGE_KEY,
+  CHEAT_DAY_RESULTS_STORAGE_KEY,
+];
 
 function readOptionalData(key) {
   const value = localStorage.getItem(key);
@@ -27,12 +39,50 @@ function readOptionalData(key) {
   }
 }
 
-function writeOptionalData(key, value) {
-  if (value && typeof value === "object" && !Array.isArray(value)) {
-    localStorage.setItem(key, JSON.stringify(value));
-  } else {
+function serializeOptionalData(value) {
+  return value === null ? null : JSON.stringify(value);
+}
+
+function writeStorageValue(key, value) {
+  if (value === null) {
     localStorage.removeItem(key);
+    return;
   }
+
+  localStorage.setItem(key, value);
+}
+
+function createRestorePayload(backup) {
+  if (!validateBackup(backup)) {
+    return null;
+  }
+
+  try {
+    return new Map([
+      [RECIPE_STORAGE_KEY, JSON.stringify(backup.data.recipes)],
+      [THEME_STORAGE_KEY, backup.data.theme],
+      [
+        CHEAT_DAY_SCHEDULES_STORAGE_KEY,
+        serializeOptionalData(backup.data.cheatDay.schedules),
+      ],
+      [
+        CHEAT_DAY_RESULTS_STORAGE_KEY,
+        serializeOptionalData(backup.data.cheatDay.results),
+      ],
+    ]);
+  } catch {
+    return null;
+  }
+}
+
+function restoreSnapshot(snapshot) {
+  [...snapshot.entries()].reverse().forEach(([key, value]) => {
+    try {
+      writeStorageValue(key, value);
+    } catch {
+      // A browser can continue rejecting writes after a quota error.
+    }
+  });
 }
 
 export function createBackup() {
@@ -52,40 +102,40 @@ export function createBackup() {
 }
 
 export function validateBackup(backup) {
-  if (
-    !backup ||
-    typeof backup !== "object" ||
-    backup.format !== BACKUP_FORMAT ||
-    backup.version !== BACKUP_VERSION ||
-    !backup.data ||
-    !Array.isArray(backup.data.recipes)
-  ) {
-    return false;
-  }
-
-  const hasValidRecipes = backup.data.recipes.every(
-    (recipe) => recipe && typeof recipe === "object" && !Array.isArray(recipe)
+  return Boolean(
+    backup &&
+      typeof backup === "object" &&
+      !Array.isArray(backup) &&
+      backup.format === BACKUP_FORMAT &&
+      backup.version === BACKUP_VERSION &&
+      backup.data &&
+      typeof backup.data === "object" &&
+      !Array.isArray(backup.data) &&
+      isValidRecipeCollection(backup.data.recipes) &&
+      isSupportedTheme(backup.data.theme) &&
+      isValidCheatDayBackupData(backup.data.cheatDay)
   );
-  const hasValidTheme = ["dark", "light"].includes(backup.data.theme);
-  const cheatDay = backup.data.cheatDay;
-  const hasValidCheatDay =
-    !cheatDay ||
-    (typeof cheatDay === "object" &&
-      !Array.isArray(cheatDay) &&
-      (!cheatDay.schedules || typeof cheatDay.schedules === "object") &&
-      (!cheatDay.results || typeof cheatDay.results === "object"));
-
-  return hasValidRecipes && hasValidTheme && hasValidCheatDay;
 }
 
 export function restoreBackup(backup) {
-  saveRecipes(backup.data.recipes);
-  applyTheme(backup.data.theme);
-  writeOptionalData(
-    CHEAT_DAY_SCHEDULES_STORAGE_KEY,
-    backup.data.cheatDay?.schedules
+  const restorePayload = createRestorePayload(backup);
+
+  if (!restorePayload) {
+    throw new Error("INVALID_BACKUP");
+  }
+
+  const snapshot = new Map(
+    RESTORE_KEYS.map((key) => [key, localStorage.getItem(key)])
   );
-  writeOptionalData(CHEAT_DAY_RESULTS_STORAGE_KEY, backup.data.cheatDay?.results);
+
+  try {
+    restorePayload.forEach((value, key) => writeStorageValue(key, value));
+  } catch {
+    restoreSnapshot(snapshot);
+    throw new Error("RESTORE_FAILED");
+  }
+
+  applyThemeToDocument(backup.data.theme);
 }
 
 export function resetAppData() {
