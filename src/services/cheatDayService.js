@@ -89,7 +89,7 @@ export function getCalendarWeekKey(year, month, day) {
   return `${weekYear}-${String(week).padStart(2, "0")}`;
 }
 
-function isValidDateKey(dateKey) {
+export function isValidLocalDateKey(dateKey) {
   if (typeof dateKey !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) {
     return false;
   }
@@ -99,7 +99,7 @@ function isValidDateKey(dateKey) {
 }
 
 function isValidMonthKey(monthKey) {
-  return typeof monthKey === "string" && /^\d{4}-\d{2}$/.test(monthKey) && isValidDateKey(`${monthKey}-01`);
+  return typeof monthKey === "string" && /^\d{4}-\d{2}$/.test(monthKey) && isValidLocalDateKey(`${monthKey}-01`);
 }
 
 function getScheduleDateKeys(monthKey, days) {
@@ -226,7 +226,7 @@ function getValidSchedulesFromStorage() {
 }
 
 function isValidDailyResult(result, dateKey, schedule) {
-  if (!isPlainObject(result) || !isValidDateKey(dateKey) || !Array.isArray(schedule)) {
+  if (!isPlainObject(result) || !isValidLocalDateKey(dateKey) || !Array.isArray(schedule)) {
     return false;
   }
 

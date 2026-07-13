@@ -9,6 +9,7 @@ import {
   getCheatDayBackupData,
   isValidCheatDayBackupData,
 } from "./cheatDayService";
+import { DAILY_RECOMMENDATION_STORAGE_KEY } from "./dailyRecommendationService";
 import {
   applyThemeToDocument,
   getTheme,
@@ -24,6 +25,7 @@ const RESTORE_KEYS = [
   THEME_STORAGE_KEY,
   CHEAT_DAY_SCHEDULES_STORAGE_KEY,
   CHEAT_DAY_RESULTS_STORAGE_KEY,
+  DAILY_RECOMMENDATION_STORAGE_KEY,
 ];
 
 function serializeOptionalData(value) {
@@ -56,6 +58,7 @@ function createRestorePayload(backup) {
         CHEAT_DAY_RESULTS_STORAGE_KEY,
         serializeOptionalData(backup.data.cheatDay.results),
       ],
+      [DAILY_RECOMMENDATION_STORAGE_KEY, null],
     ]);
   } catch {
     return null;
@@ -126,6 +129,7 @@ export function resetAppData() {
   localStorage.removeItem(RECIPE_STORAGE_KEY);
   localStorage.removeItem(CHEAT_DAY_SCHEDULES_STORAGE_KEY);
   localStorage.removeItem(CHEAT_DAY_RESULTS_STORAGE_KEY);
+  localStorage.removeItem(DAILY_RECOMMENDATION_STORAGE_KEY);
   localStorage.removeItem(THEME_STORAGE_KEY);
   resetTheme();
 }

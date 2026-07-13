@@ -8,18 +8,27 @@ function DailyRecommendation() {
   const [recipe, setRecipe] = useState(() => getDailyRecommendation());
 
   useEffect(() => {
-    const now = new Date();
-    const nextDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-    let intervalId;
-    const timeoutId = window.setTimeout(() => {
-      setRecipe(getDailyRecommendation());
-      intervalId = window.setInterval(() => setRecipe(getDailyRecommendation()), 24 * 60 * 60 * 1000);
-    }, nextDay.getTime() - now.getTime());
+    let nextDayTimer;
 
-    return () => {
-      window.clearTimeout(timeoutId);
-      window.clearInterval(intervalId);
+    const refreshForNewLocalDay = () => {
+      setRecipe(getDailyRecommendation());
+
+      const now = new Date();
+      const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      nextDayTimer = window.setTimeout(
+        refreshForNewLocalDay,
+        Math.max(1000, nextMidnight.getTime() - now.getTime())
+      );
     };
+
+    const now = new Date();
+    const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    nextDayTimer = window.setTimeout(
+      refreshForNewLocalDay,
+      Math.max(1000, nextMidnight.getTime() - now.getTime())
+    );
+
+    return () => window.clearTimeout(nextDayTimer);
   }, []);
 
   return (
