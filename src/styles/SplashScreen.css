@@ -1,54 +1,54 @@
+@import "./theme.css";
+
 .splash {
-  background: var(--background);
-  color: var(--text);
+  display: grid;
   width: 100vw;
-  height: 100vh;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  height: 100dvh;
+  min-height: 100vh;
+  place-items: center;
+  overflow: hidden;
 }
 
-.logo {
-  text-align: center;
-
-  animation: intro 5s ease-in-out forwards;
+.splash-dark {
+  background: #090a08;
 }
 
-.logo h1 {
-  font-size: 64px;
-  margin: 20px 0 10px;
+.splash-light {
+  background: #f7f1e6;
 }
 
-.logo h2 {
-  font-size: 24px;
-  font-weight: 400;
-  color: var(--text-secondary);
+.splash-artwork {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  animation: splash-intro 5s ease-in-out forwards;
 }
 
-.logo p {
-  margin-top: 35px;
-  color: var(--text-secondary);
-}
-
-@keyframes intro {
+@keyframes splash-intro {
   0% {
     opacity: 0;
-    transform: scale(0.8);
+    transform: scale(.985);
   }
 
-  20% {
+  12% {
     opacity: 1;
     transform: scale(1);
   }
 
-  80% {
+  84% {
     opacity: 1;
     transform: scale(1);
   }
 
   100% {
     opacity: 0;
-    transform: scale(1.05);
+    transform: scale(1.01);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .splash-artwork {
+    animation: none;
   }
 }
