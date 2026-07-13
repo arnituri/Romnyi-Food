@@ -9,12 +9,14 @@ import {
   restoreBackup,
   validateBackup,
 } from "../services/backupService";
-import { applyTheme, getTheme } from "../services/themeService";
+import { applyTheme, applyThemeToDocument, getTheme } from "../services/themeService";
 import { useAccessibleDialog } from "../hooks/useAccessibleDialog";
+import { useNotifications } from "../hooks/useNotifications";
 import "../styles/Settings.css";
 
 function Settings() {
   const navigate = useNavigate();
+  const notify = useNotifications();
   const fileInputRef = useRef();
   const [theme, setTheme] = useState(getTheme());
   const [notice, setNotice] = useState(null);
@@ -29,7 +31,14 @@ function Settings() {
   const toggleTheme = () => {
     const nextTheme = isDarkTheme ? "light" : "dark";
 
-    applyTheme(nextTheme);
+    const didPersistTheme = applyTheme(nextTheme);
+
+    if (!didPersistTheme) {
+      applyThemeToDocument(theme);
+      notify.error("A téma mentése nem sikerült. Az előző beállítás maradt érvényben.");
+      return;
+    }
+
     setTheme(nextTheme);
   };
 
