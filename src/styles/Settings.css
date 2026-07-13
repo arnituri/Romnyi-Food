@@ -22,6 +22,16 @@
   box-shadow: var(--shadow);
 }
 
+.settings-card-spaced {
+  margin-top: 24px;
+}
+
+.settings-card h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(22px, 3vw, 28px);
+}
+
 .settings-eyebrow {
   margin: 0 0 10px;
   color: var(--primary);
@@ -87,6 +97,221 @@
   font-weight: 800;
 }
 
+.settings-action-list {
+  display: grid;
+  gap: 14px;
+}
+
+.settings-action {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 17px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-medium);
+  background: var(--input-background);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: var(--transition);
+}
+
+.settings-action:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--gold-shadow);
+  transform: translateY(-1px);
+}
+
+.settings-action:focus-visible,
+.settings-danger-button:focus-visible,
+.settings-dialog-button:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+}
+
+.settings-action-icon {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface-elevated);
+  color: var(--primary);
+  font-size: 19px;
+}
+
+.settings-action-copy {
+  display: grid;
+  gap: 4px;
+}
+
+.settings-action-copy strong {
+  font-size: 15px;
+}
+
+.settings-action-copy span,
+.settings-action-arrow {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.settings-action-arrow {
+  color: var(--primary);
+  font-size: 22px;
+}
+
+.settings-file-input {
+  display: none;
+}
+
+.settings-info-list {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+
+.settings-info-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-info-row:first-child {
+  padding-top: 0;
+}
+
+.settings-info-row:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.settings-info-row dt {
+  color: var(--text-secondary);
+}
+
+.settings-info-row dd {
+  margin: 0;
+  color: var(--text);
+  font-weight: 700;
+  text-align: right;
+}
+
+.settings-card-danger {
+  border-color: color-mix(in srgb, var(--danger) 45%, var(--border));
+}
+
+.settings-danger-button {
+  width: fit-content;
+  padding: 14px 18px;
+  border: 1px solid color-mix(in srgb, var(--danger) 62%, var(--border));
+  border-radius: var(--radius-medium);
+  background: color-mix(in srgb, var(--danger) 12%, var(--surface-elevated));
+  color: var(--danger);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  transition: var(--transition);
+}
+
+.settings-danger-button:hover {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+
+.settings-notice {
+  margin: 24px 0 0;
+  padding: 15px 18px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-medium);
+  background: var(--surface-elevated);
+  color: var(--text);
+  box-shadow: var(--shadow-soft);
+}
+
+.settings-notice-error {
+  border-color: color-mix(in srgb, var(--danger) 55%, var(--border));
+  color: var(--danger);
+}
+
+.settings-dialog-backdrop {
+  position: fixed;
+  z-index: 1100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--overlay);
+}
+
+.settings-dialog {
+  width: min(100%, 460px);
+  padding: 30px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-large);
+  background: var(--surface-card);
+  box-shadow: var(--shadow);
+}
+
+.settings-dialog h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: 24px;
+}
+
+.settings-dialog p {
+  margin: 14px 0 0;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.settings-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.settings-dialog-button {
+  min-width: 106px;
+  padding: 12px 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-medium);
+  background: var(--surface-elevated);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  transition: var(--transition);
+}
+
+.settings-dialog-button:hover {
+  border-color: var(--primary);
+}
+
+.settings-dialog-button-confirm {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.settings-dialog-button-confirm:hover {
+  filter: brightness(1.06);
+  box-shadow: var(--gold-shadow);
+}
+
+.settings-dialog-button-danger {
+  border-color: var(--danger);
+  background: var(--danger);
+  color: #fff;
+}
+
 @media (max-width: 600px) {
   .settings-container {
     width: min(100% - 32px, 780px);
@@ -95,5 +320,17 @@
 
   .settings-card {
     padding: 26px;
+  }
+
+  .settings-action {
+    align-items: flex-start;
+  }
+
+  .settings-action-arrow {
+    align-self: center;
+  }
+
+  .settings-dialog {
+    padding: 25px;
   }
 }

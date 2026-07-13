@@ -1,7 +1,7 @@
-const STORAGE_KEY = "recipes";
+export const RECIPE_STORAGE_KEY = "recipes";
 
 export function getRecipes() {
-  const recipes = localStorage.getItem(STORAGE_KEY);
+  const recipes = localStorage.getItem(RECIPE_STORAGE_KEY);
 
   if (!recipes) {
     return [];
@@ -11,7 +11,7 @@ export function getRecipes() {
 }
 
 export function saveRecipes(recipes) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(recipes));
+  localStorage.setItem(RECIPE_STORAGE_KEY, JSON.stringify(recipes));
 }
 
 export function addRecipe(recipe) {

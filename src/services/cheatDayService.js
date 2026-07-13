@@ -1,5 +1,5 @@
-const SCHEDULES_STORAGE_KEY = "romnyi-food-cheat-day-schedules";
-const RESULTS_STORAGE_KEY = "romnyi-food-cheat-day-results";
+export const CHEAT_DAY_SCHEDULES_STORAGE_KEY = "romnyi-food-cheat-day-schedules";
+export const CHEAT_DAY_RESULTS_STORAGE_KEY = "romnyi-food-cheat-day-results";
 
 function readStorage(key) {
   try {
@@ -79,7 +79,7 @@ function createMonthlySchedule(year, month) {
 }
 
 export function getMonthlyWinningDays(date = new Date()) {
-  const schedules = readStorage(SCHEDULES_STORAGE_KEY);
+  const schedules = readStorage(CHEAT_DAY_SCHEDULES_STORAGE_KEY);
   const monthKey = getMonthKey(date);
 
   if (Array.isArray(schedules[monthKey]) && schedules[monthKey].length === 4) {
@@ -88,13 +88,13 @@ export function getMonthlyWinningDays(date = new Date()) {
 
   const schedule = createMonthlySchedule(date.getFullYear(), date.getMonth());
   schedules[monthKey] = schedule;
-  localStorage.setItem(SCHEDULES_STORAGE_KEY, JSON.stringify(schedules));
+  localStorage.setItem(CHEAT_DAY_SCHEDULES_STORAGE_KEY, JSON.stringify(schedules));
 
   return schedule;
 }
 
 export function getTodayCheatDayResult(date = new Date()) {
-  const results = readStorage(RESULTS_STORAGE_KEY);
+  const results = readStorage(CHEAT_DAY_RESULTS_STORAGE_KEY);
 
   return results[getDateKey(date)] || null;
 }
@@ -114,10 +114,10 @@ export function createTodayCheatDayResult(date = new Date()) {
     segmentIndex: isWinner ? 0 : (dateNumber % 5) + 1,
     spunAt: date.toISOString(),
   };
-  const results = readStorage(RESULTS_STORAGE_KEY);
+  const results = readStorage(CHEAT_DAY_RESULTS_STORAGE_KEY);
 
   results[getDateKey(date)] = result;
-  localStorage.setItem(RESULTS_STORAGE_KEY, JSON.stringify(results));
+  localStorage.setItem(CHEAT_DAY_RESULTS_STORAGE_KEY, JSON.stringify(results));
 
   return result;
 }
