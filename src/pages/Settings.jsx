@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import BottomNavigation from "../components/BottomNavigation";
@@ -10,6 +10,7 @@ import {
   validateBackup,
 } from "../services/backupService";
 import { applyTheme, getTheme } from "../services/themeService";
+import { useAccessibleDialog } from "../hooks/useAccessibleDialog";
 import "../styles/Settings.css";
 
 function Settings() {
@@ -18,6 +19,11 @@ function Settings() {
   const [theme, setTheme] = useState(getTheme());
   const [notice, setNotice] = useState(null);
   const [pendingAction, setPendingAction] = useState(null);
+  const closePendingAction = useCallback(() => setPendingAction(null), []);
+  const { captureOpener: captureDialogOpener, dialogRef: settingsDialogRef } = useAccessibleDialog(
+    Boolean(pendingAction),
+    closePendingAction
+  );
   const isDarkTheme = theme === "dark";
 
   const toggleTheme = () => {
@@ -161,7 +167,10 @@ function Settings() {
             <button
               className="settings-action"
               type="button"
-              onClick={() => fileInputRef.current?.click()}
+              onClick={(event) => {
+                captureDialogOpener(event);
+                fileInputRef.current?.click();
+              }}
             >
               <span className="settings-action-icon">⇧</span>
               <span className="settings-action-copy">
@@ -212,7 +221,10 @@ function Settings() {
           <button
             className="settings-danger-button"
             type="button"
-            onClick={() => setPendingAction({ type: "reset" })}
+            onClick={(event) => {
+              captureDialogOpener(event);
+              setPendingAction({ type: "reset" });
+            }}
           >
             Összes adat törlése
           </button>
@@ -229,17 +241,21 @@ function Settings() {
         <div className="settings-dialog-backdrop">
           <section
             className="settings-dialog"
-            role="dialog"
+            ref={settingsDialogRef}
+            role={dialogContent.danger ? "alertdialog" : "dialog"}
             aria-modal="true"
             aria-labelledby="settings-dialog-title"
+            aria-describedby="settings-dialog-description"
+            tabIndex="-1"
           >
             <h2 id="settings-dialog-title">{dialogContent.title}</h2>
-            <p>{dialogContent.text}</p>
+            <p id="settings-dialog-description">{dialogContent.text}</p>
             <div className="settings-dialog-actions">
               <button
                 className="settings-dialog-button"
                 type="button"
-                onClick={() => setPendingAction(null)}
+                data-dialog-initial-focus
+                onClick={closePendingAction}
               >
                 Mégse
               </button>

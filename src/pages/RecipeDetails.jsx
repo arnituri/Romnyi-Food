@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   getRecipeById,
@@ -10,6 +10,7 @@ import Header from "../components/Header";
 import BottomNavigation from "../components/BottomNavigation";
 import RecipeImage from "../components/RecipeImage";
 import { useNotifications } from "../hooks/useNotifications";
+import { useAccessibleDialog } from "../hooks/useAccessibleDialog";
 import "../styles/RecipeDetails.css";
 
 function RecipeDetails() {
@@ -19,6 +20,11 @@ function RecipeDetails() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(
     () => getRecipeById(id)?.favorite ?? false
+  );
+  const closeDeleteDialog = useCallback(() => setIsDeleteDialogOpen(false), []);
+  const { captureOpener: captureDeleteOpener, dialogRef: deleteDialogRef } = useAccessibleDialog(
+    isDeleteDialogOpen,
+    closeDeleteDialog
   );
 
   const recipe = getRecipeById(id);
@@ -148,7 +154,10 @@ const handleEdit = () => {
 
           <button
             className="delete-button"
-            onClick={() => setIsDeleteDialogOpen(true)}
+            onClick={(event) => {
+              captureDeleteOpener(event);
+              setIsDeleteDialogOpen(true);
+            }}
           >
             🗑️ Törlés
           </button>
@@ -168,16 +177,21 @@ const handleEdit = () => {
         <div className="delete-dialog-backdrop">
           <div
             className="delete-dialog"
-            role="dialog"
+            ref={deleteDialogRef}
+            role="alertdialog"
             aria-modal="true"
             aria-labelledby="delete-dialog-title"
+            aria-describedby="delete-dialog-description"
+            tabIndex="-1"
           >
             <h2 id="delete-dialog-title">Biztosan törölni szeretnéd ezt a receptet?</h2>
+            <p id="delete-dialog-description">A törlés végleges, és nem vonható vissza.</p>
 
             <div className="delete-dialog-actions">
               <button
                 className="action-button"
-                onClick={() => setIsDeleteDialogOpen(false)}
+                data-dialog-initial-focus
+                onClick={closeDeleteDialog}
               >
                 Mégse
               </button>

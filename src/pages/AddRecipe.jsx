@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { addRecipe, getRecipeById, updateRecipe } from "../services/recipeService";
 import { optimizeRecipeImage } from "../services/imageService";
 import BottomNavigation from "../components/BottomNavigation";
 import RecipeImage from "../components/RecipeImage";
 import { useNotifications } from "../hooks/useNotifications";
+import { useAccessibleDialog } from "../hooks/useAccessibleDialog";
 import "../styles/AddRecipe.css";
 
 function getFormValues(recipe) {
@@ -32,6 +33,8 @@ function AddRecipe() {
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [leavePath, setLeavePath] = useState(null);
   const [isEditUnavailable, setIsEditUnavailable] = useState(false);
+  const closeLeaveDialog = useCallback(() => setLeavePath(null), []);
+  const { dialogRef: leaveDialogRef } = useAccessibleDialog(Boolean(leavePath), closeLeaveDialog);
 
   const hasUnsavedChanges =
     isEditing && JSON.stringify(formValues) !== JSON.stringify(initialValues);
@@ -163,10 +166,11 @@ function AddRecipe() {
 
       {leavePath && (
         <div className="add-dialog-backdrop">
-          <section className="add-dialog" role="dialog" aria-modal="true" aria-labelledby="unsaved-dialog-title">
+          <section ref={leaveDialogRef} className="add-dialog" role="dialog" aria-modal="true" aria-labelledby="unsaved-dialog-title" aria-describedby="unsaved-dialog-description" tabIndex="-1">
             <h2 id="unsaved-dialog-title">Nem mentett módosításaid vannak. Biztosan elhagyod az oldalt?</h2>
+            <p id="unsaved-dialog-description">A módosításaid mentés nélkül elvesznek.</p>
             <div className="add-dialog-actions">
-              <button className="cancel-button" type="button" onClick={() => setLeavePath(null)}>Maradok</button>
+              <button className="cancel-button" type="button" data-dialog-initial-focus onClick={closeLeaveDialog}>Maradok</button>
               <button className="save-button" type="button" onClick={() => navigate(leavePath)}>Kilépés mentés nélkül</button>
             </div>
           </section>
