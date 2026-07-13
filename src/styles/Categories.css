@@ -32,9 +32,9 @@
 
 .category-card{
 
-    background:var(--surface);
+    background:var(--surface-card);
 
-    border:2px solid var(--border);
+    border:1px solid var(--border);
 
     border-radius:var(--radius-large);
 
@@ -62,7 +62,7 @@
 
 .category-card:hover{
 
-    border-color:var(--primary);
+    border-color:var(--border-strong);
 
     box-shadow:var(--gold-shadow);
 

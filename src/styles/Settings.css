@@ -1,0 +1,99 @@
+@import "./theme.css";
+
+.settings-page {
+  min-height: 100vh;
+  padding-bottom: 118px;
+  background: var(--background);
+}
+
+.settings-container {
+  width: min(100% - 40px, 780px);
+  margin: 0 auto;
+  padding: 48px 0;
+}
+
+.settings-card {
+  display: grid;
+  gap: 32px;
+  padding: 36px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-large);
+  box-shadow: var(--shadow);
+}
+
+.settings-eyebrow {
+  margin: 0 0 10px;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .12em;
+}
+
+.settings-card h1 {
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(30px, 5vw, 42px);
+}
+
+.settings-description {
+  margin: 14px 0 0;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.theme-switch {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-medium);
+  background: var(--input-background);
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  transition: var(--transition);
+}
+
+.theme-switch:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--gold-shadow);
+}
+
+.theme-switch:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+}
+
+.theme-switch-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface-elevated);
+  font-size: 21px;
+}
+
+.theme-switch-state {
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: var(--on-primary);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+@media (max-width: 600px) {
+  .settings-container {
+    width: min(100% - 32px, 780px);
+    padding: 28px 0;
+  }
+
+  .settings-card {
+    padding: 26px;
+  }
+}

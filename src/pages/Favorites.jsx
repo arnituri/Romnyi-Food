@@ -22,7 +22,7 @@ function Favorites() {
 
           <h2
             style={{
-              color: "white",
+              color: "var(--text)",
               textAlign: "center",
               marginTop: "60px",
             }}

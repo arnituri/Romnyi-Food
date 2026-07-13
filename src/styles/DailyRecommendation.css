@@ -22,11 +22,11 @@
 
 .daily-card{
 
-    background:var(--surface);
+    background:var(--surface-card);
 
     border-radius:var(--radius-large);
 
-    border:2px solid var(--border);
+    border:1px solid var(--border);
 
     box-shadow:var(--shadow);
 
@@ -42,7 +42,7 @@
 
 .daily-card:hover{
 
-    border-color:var(--primary);
+    border-color:var(--border-strong);
 
     box-shadow:var(--gold-shadow);
 
@@ -56,7 +56,7 @@
 
     border-radius:var(--radius-medium);
 
-    background:var(--surface-light);
+    background:var(--surface-elevated);
 
     display:flex;
 
@@ -108,7 +108,7 @@
 
     background:var(--primary);
 
-    color:#111;
+    color:var(--on-primary);
 
     border:none;
 

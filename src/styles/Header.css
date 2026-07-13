@@ -9,11 +9,11 @@
     justify-content:space-between;
     align-items:center;
 
-    padding:18px 25px;
+    padding:16px 25px;
 
     background:var(--surface);
 
-    border-bottom:1px solid var(--border);
+    border-bottom:1px solid var(--border-strong);
 
     box-shadow:var(--shadow);
 
@@ -25,9 +25,12 @@
 
     color:var(--primary);
 
-    font-size:30px;
+    font-family:var(--font-display);
+    font-size:28px;
 
-    font-weight:bold;
+    font-weight:600;
+
+    letter-spacing:.08em;
 
     margin:0;
 
@@ -37,9 +40,9 @@
 
     background:var(--primary);
 
-    color:#111;
+    color:var(--on-primary);
 
-    border:none;
+    border:1px solid transparent;
 
     padding:12px 18px;
 
@@ -58,5 +61,13 @@
 .header-button:hover{
 
     background:var(--primary-hover);
+
+}
+
+.header-button:focus-visible{
+
+    outline:2px solid var(--primary-hover);
+
+    outline-offset:3px;
 
 }

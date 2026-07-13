@@ -10,9 +10,9 @@
 
     padding:18px 22px;
 
-    background:var(--surface);
+    background:var(--input-background);
 
-    border:2px solid var(--border);
+    border:1px solid var(--border);
 
     border-radius:var(--radius-medium);
 

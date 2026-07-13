@@ -38,7 +38,7 @@
 
 .favorites-button{
     background:var(--primary);
-    color:#111;
+    color:var(--on-primary);
     border:none;
     padding:16px 28px;
     border-radius:var(--radius-small);

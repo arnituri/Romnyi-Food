@@ -16,7 +16,7 @@
     height: 420px;
     object-fit: cover;
     border-radius: var(--radius-large);
-    border: 2px solid var(--primary);
+    border: 1px solid var(--border-strong);
     box-shadow: var(--gold-shadow);
 }
 
@@ -40,7 +40,7 @@
 }
 
 .info-card {
-    background: var(--surface);
+    background: var(--surface-card);
     border: 1px solid var(--border);
     border-radius: var(--radius-medium);
     padding: 20px;
@@ -54,8 +54,9 @@
 }
 
 .section {
-    background: var(--surface);
+    background: var(--surface-card);
     padding: 25px;
+    border: 1px solid var(--border);
     border-radius: var(--radius-medium);
     margin-bottom: 25px;
     box-shadow: var(--shadow);
@@ -81,7 +82,7 @@
 
 .action-button {
     background: var(--primary);
-    color: #111;
+    color: var(--on-primary);
     border: none;
     padding: 14px 28px;
     border-radius: var(--radius-small);
@@ -95,8 +96,8 @@
 }
 
 .delete-button {
-    background: #b91c1c;
-    color: white;
+    background: var(--danger);
+    color: var(--on-danger);
     border: none;
     padding: 14px 28px;
     border-radius: var(--radius-small);
@@ -106,7 +107,7 @@
 }
 
 .delete-button:hover {
-    background: #dc2626;
+    background: var(--danger-hover);
 }
 
 .delete-dialog-backdrop {
@@ -117,13 +118,13 @@
     align-items: center;
     justify-content: center;
     padding: 20px;
-    background: rgba(0, 0, 0, .72);
+    background: var(--overlay);
 }
 
 .delete-dialog {
     width: min(100%, 480px);
     background: var(--surface);
-    border: 2px solid var(--primary);
+    border: 1px solid var(--border-strong);
     border-radius: var(--radius-large);
     padding: 30px;
     box-shadow: var(--gold-shadow);
