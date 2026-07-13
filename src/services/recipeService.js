@@ -1,5 +1,7 @@
+import { readStorageValue, setStorageValue } from "./storageService.js";
+
 export const RECIPE_STORAGE_KEY = "recipes";
-const RECIPE_RECOVERY_KEY_PREFIX = "romnyi-food-recipes-recovery-";
+export const RECIPE_RECOVERY_KEY_PREFIX = "romnyi-food-recipes-recovery-";
 const RECIPE_RECOVERED_EVENT = "romnyi-food-recipes-recovered";
 const MAX_NUTRITION_VALUE = 1000000;
 const MAX_RECIPE_STORAGE_BYTES = 4 * 1024 * 1024;
@@ -98,7 +100,7 @@ function getValidationMessage(error) {
 }
 
 function getStorageErrorMessage(error) {
-  if (error instanceof RecipeStorageError || error?.name === "QuotaExceededError") {
+  if (error?.code === "STORAGE_LIMIT" || error?.name === "QuotaExceededError") {
     return "A képpel együtt túl sok adatot kellene menteni a készüléken. Válassz kisebb képet, vagy törölj néhány régi receptet.";
   }
 
@@ -303,13 +305,13 @@ function preserveCorruptedRecipes(rawValue) {
   const recoveryKey = `${RECIPE_RECOVERY_KEY_PREFIX}${Date.now()}`;
 
   try {
-    localStorage.setItem(recoveryKey, rawValue);
+    if (!setStorageValue(recoveryKey, rawValue)) return;
   } catch {
     return;
   }
 
   try {
-    localStorage.setItem(RECIPE_STORAGE_KEY, "[]");
+    if (!setStorageValue(RECIPE_STORAGE_KEY, "[]")) return;
   } catch {
     return;
   }
@@ -331,9 +333,10 @@ export function consumeRecipeRecoveryNotice() {
 }
 
 export function getRecipes() {
-  const storedRecipes = localStorage.getItem(RECIPE_STORAGE_KEY);
+  const storageResult = readStorageValue(RECIPE_STORAGE_KEY);
+  const storedRecipes = storageResult.value;
 
-  if (!storedRecipes) {
+  if (!storageResult.success || !storedRecipes) {
     return [];
   }
 
@@ -363,14 +366,8 @@ export function saveRecipes(recipes) {
     throw new RecipeStorageError("STORAGE_LIMIT");
   }
 
-  try {
-    localStorage.setItem(RECIPE_STORAGE_KEY, serializedRecipes);
-  } catch (error) {
-    if (error?.name === "QuotaExceededError" || error?.code === 22) {
-      throw new RecipeStorageError("STORAGE_LIMIT");
-    }
-
-    throw error;
+  if (!setStorageValue(RECIPE_STORAGE_KEY, serializedRecipes)) {
+    throw new RecipeStorageError("STORAGE_WRITE_FAILED");
   }
 }
 
@@ -433,9 +430,24 @@ export function updateRecipe(updatedRecipe) {
 }
 
 export function deleteRecipe(id) {
-  saveRecipes(
-    getRecipes().filter((recipe) => String(recipe.id) !== String(id))
-  );
+  const recipes = getRecipes();
+  const recipe = recipes.find((savedRecipe) => String(savedRecipe.id) === String(id));
+
+  if (!recipe) {
+    return { success: false, error: "MISSING_RECIPE", message: getValidationMessage("MISSING_RECIPE") };
+  }
+
+  try {
+    saveRecipes(recipes.filter((savedRecipe) => String(savedRecipe.id) !== String(id)));
+  } catch {
+    return {
+      success: false,
+      error: "STORAGE_WRITE_FAILED",
+      message: "A recept törlése nem sikerült. A recept változatlanul megmaradt.",
+    };
+  }
+
+  return { success: true, recipe };
 }
 
 export function getRecipeById(id) {
@@ -443,11 +455,31 @@ export function getRecipeById(id) {
 }
 
 export function toggleFavorite(id) {
-  const updatedRecipes = getRecipes().map((recipe) =>
+  const recipes = getRecipes();
+  const recipe = recipes.find((savedRecipe) => String(savedRecipe.id) === String(id));
+
+  if (!recipe) {
+    return { success: false, error: "MISSING_RECIPE", message: getValidationMessage("MISSING_RECIPE") };
+  }
+
+  const updatedRecipes = recipes.map((recipe) =>
     String(recipe.id) === String(id)
       ? { ...recipe, favorite: !recipe.favorite }
       : recipe
   );
 
-  saveRecipes(updatedRecipes);
+  try {
+    saveRecipes(updatedRecipes);
+  } catch {
+    return {
+      success: false,
+      error: "STORAGE_WRITE_FAILED",
+      message: "A kedvenc beállítás mentése nem sikerült. A korábbi állapot változatlan maradt.",
+    };
+  }
+
+  return {
+    success: true,
+    recipe: updatedRecipes.find((savedRecipe) => String(savedRecipe.id) === String(id)),
+  };
 }

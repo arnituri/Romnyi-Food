@@ -1,27 +1,21 @@
+import {
+  readStorageValue,
+  removeStorageValue,
+  setStorageValue,
+} from "./storageService";
+
 export const THEME_STORAGE_KEY = "romnyi-food-theme";
 
 function readStoredTheme() {
-  try {
-    return localStorage.getItem(THEME_STORAGE_KEY);
-  } catch {
-    return null;
-  }
+  return readStorageValue(THEME_STORAGE_KEY).value;
 }
 
 function persistTheme(theme) {
-  try {
-    localStorage.setItem(THEME_STORAGE_KEY, theme);
-  } catch {
-    // The selected theme is still applied for the current session.
-  }
+  return setStorageValue(THEME_STORAGE_KEY, theme);
 }
 
 function removeStoredTheme() {
-  try {
-    localStorage.removeItem(THEME_STORAGE_KEY);
-  } catch {
-    // Storage can be unavailable in private or restricted browser contexts.
-  }
+  return removeStorageValue(THEME_STORAGE_KEY);
 }
 
 export function getTheme() {
@@ -43,12 +37,12 @@ export function applyTheme(theme) {
   const supportedTheme = isSupportedTheme(theme) ? theme : "dark";
 
   applyThemeToDocument(supportedTheme);
-  persistTheme(supportedTheme);
+  return persistTheme(supportedTheme);
 }
 
 export function resetTheme() {
   applyThemeToDocument("dark");
-  removeStoredTheme();
+  return removeStoredTheme();
 }
 
 export function initializeTheme() {

@@ -44,12 +44,25 @@ function RecipeDetails() {
   }
 
   const handleFavorite = () => {
-    toggleFavorite(recipe.id);
-    setIsFavorite((favorite) => !favorite);
+    const result = toggleFavorite(recipe.id);
+
+    if (!result.success) {
+      alert(`⚠️ ${result.message}`);
+      return;
+    }
+
+    setIsFavorite(result.recipe.favorite);
   };
 
   const confirmDelete = () => {
-    deleteRecipe(recipe.id);
+    const result = deleteRecipe(recipe.id);
+
+    if (!result.success) {
+      setIsDeleteDialogOpen(false);
+      alert(`⚠️ ${result.message}`);
+      return;
+    }
+
     navigate("/recipes");
   };
 

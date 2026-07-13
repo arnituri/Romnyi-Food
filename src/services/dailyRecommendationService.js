@@ -1,5 +1,6 @@
 import { getLocalDateKey, isValidLocalDateKey } from "./cheatDayService.js";
 import { getRecipes } from "./recipeService.js";
+import { readStorageValue, removeStorageValue, setStorageValue } from "./storageService";
 
 export const DAILY_RECOMMENDATION_STORAGE_KEY = "romnyi-food-daily-recommendation";
 
@@ -23,16 +24,14 @@ function isValidStoredRecommendation(value) {
 }
 
 function clearStoredRecommendation() {
-  try {
-    localStorage.removeItem(DAILY_RECOMMENDATION_STORAGE_KEY);
-  } catch {
-    // Local storage can be unavailable in private or restricted contexts.
-  }
+  return removeStorageValue(DAILY_RECOMMENDATION_STORAGE_KEY);
 }
 
 function getStoredRecommendation() {
   try {
-    const storedValue = localStorage.getItem(DAILY_RECOMMENDATION_STORAGE_KEY);
+    const storedResult = readStorageValue(DAILY_RECOMMENDATION_STORAGE_KEY);
+    if (!storedResult.success) return null;
+    const storedValue = storedResult.value;
     if (!storedValue) return null;
 
     const recommendation = JSON.parse(storedValue);
@@ -60,11 +59,10 @@ function getDeterministicIndex(dateKey, itemCount) {
 }
 
 function storeRecommendation(recommendation) {
-  try {
-    localStorage.setItem(DAILY_RECOMMENDATION_STORAGE_KEY, JSON.stringify(recommendation));
-  } catch {
-    // The deterministic choice below is still stable for this browser session.
-  }
+  return setStorageValue(
+    DAILY_RECOMMENDATION_STORAGE_KEY,
+    JSON.stringify(recommendation)
+  );
 }
 
 export function clearDailyRecommendation() {

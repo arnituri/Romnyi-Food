@@ -1,6 +1,7 @@
 import {
   getRecipes,
   isValidRecipeCollection,
+  RECIPE_RECOVERY_KEY_PREFIX,
   RECIPE_STORAGE_KEY,
 } from "./recipeService";
 import {
@@ -10,6 +11,7 @@ import {
   isValidCheatDayBackupData,
 } from "./cheatDayService";
 import { DAILY_RECOMMENDATION_STORAGE_KEY } from "./dailyRecommendationService";
+import { applyStorageTransaction, getStorageKeys } from "./storageService";
 import {
   applyThemeToDocument,
   getTheme,
@@ -30,15 +32,6 @@ const RESTORE_KEYS = [
 
 function serializeOptionalData(value) {
   return value === null ? null : JSON.stringify(value);
-}
-
-function writeStorageValue(key, value) {
-  if (value === null) {
-    localStorage.removeItem(key);
-    return;
-  }
-
-  localStorage.setItem(key, value);
 }
 
 function createRestorePayload(backup) {
@@ -63,16 +56,6 @@ function createRestorePayload(backup) {
   } catch {
     return null;
   }
-}
-
-function restoreSnapshot(snapshot) {
-  [...snapshot.entries()].reverse().forEach(([key, value]) => {
-    try {
-      writeStorageValue(key, value);
-    } catch {
-      // A browser can continue rejecting writes after a quota error.
-    }
-  });
 }
 
 export function createBackup() {
@@ -111,14 +94,11 @@ export function restoreBackup(backup) {
     throw new Error("INVALID_BACKUP");
   }
 
-  const snapshot = new Map(
-    RESTORE_KEYS.map((key) => [key, localStorage.getItem(key)])
+  const didRestore = applyStorageTransaction(
+    [...restorePayload.entries()].map(([key, value]) => ({ key, value }))
   );
 
-  try {
-    restorePayload.forEach((value, key) => writeStorageValue(key, value));
-  } catch {
-    restoreSnapshot(snapshot);
+  if (!didRestore) {
     throw new Error("RESTORE_FAILED");
   }
 
@@ -126,12 +106,22 @@ export function restoreBackup(backup) {
 }
 
 export function resetAppData() {
-  localStorage.removeItem(RECIPE_STORAGE_KEY);
-  localStorage.removeItem(CHEAT_DAY_SCHEDULES_STORAGE_KEY);
-  localStorage.removeItem(CHEAT_DAY_RESULTS_STORAGE_KEY);
-  localStorage.removeItem(DAILY_RECOMMENDATION_STORAGE_KEY);
-  localStorage.removeItem(THEME_STORAGE_KEY);
+  const storageKeys = getStorageKeys();
+  if (!storageKeys) {
+    return { success: false };
+  }
+
+  const recoveryKeys = storageKeys.filter((key) => key.startsWith(RECIPE_RECOVERY_KEY_PREFIX));
+  const didReset = applyStorageTransaction(
+    [...RESTORE_KEYS, ...recoveryKeys].map((key) => ({ key, value: null }))
+  );
+
+  if (!didReset) {
+    return { success: false };
+  }
+
   resetTheme();
+  return { success: true };
 }
 
 export function downloadBackup(backup) {

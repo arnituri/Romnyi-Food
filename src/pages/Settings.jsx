@@ -79,7 +79,17 @@ function Settings() {
     }
 
     if (pendingAction?.type === "reset") {
-      resetAppData();
+      const result = resetAppData();
+
+      if (!result.success) {
+        setPendingAction(null);
+        setNotice({
+          type: "error",
+          text: "Az adatok törlése nem sikerült. A korábbi adataid változatlanok maradtak.",
+        });
+        return;
+      }
+
       setTheme("dark");
       setPendingAction(null);
       navigate("/", { replace: true });

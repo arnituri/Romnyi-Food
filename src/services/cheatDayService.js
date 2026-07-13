@@ -1,3 +1,5 @@
+import { readStorageValue, setStorageValue } from "./storageService";
+
 export const CHEAT_DAY_SCHEDULES_STORAGE_KEY = "romnyi-food-cheat-day-schedules";
 export const CHEAT_DAY_RESULTS_STORAGE_KEY = "romnyi-food-cheat-day-results";
 
@@ -10,7 +12,9 @@ function isPlainObject(value) {
 
 function readStorageObject(key) {
   try {
-    const rawValue = localStorage.getItem(key);
+    const storedResult = readStorageValue(key);
+    if (!storedResult.success) return {};
+    const rawValue = storedResult.value;
     if (!rawValue) return {};
 
     const parsedValue = JSON.parse(rawValue);
@@ -21,12 +25,7 @@ function readStorageObject(key) {
 }
 
 function writeStorageObject(key, value) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-    return true;
-  } catch {
-    return false;
-  }
+  return setStorageValue(key, JSON.stringify(value));
 }
 
 export function getLocalDateKey(date = new Date()) {
