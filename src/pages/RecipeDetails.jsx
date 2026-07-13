@@ -1,7 +1,6 @@
 import { useCallback, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  getRecipeById,
   toggleFavorite,
   deleteRecipe,
 } from "../services/recipeService";
@@ -11,6 +10,7 @@ import BottomNavigation from "../components/BottomNavigation";
 import RecipeImage from "../components/RecipeImage";
 import { useNotifications } from "../hooks/useNotifications";
 import { useAccessibleDialog } from "../hooks/useAccessibleDialog";
+import { useRecipes } from "../hooks/useRecipes";
 import "../styles/RecipeDetails.css";
 
 function RecipeDetails() {
@@ -18,16 +18,15 @@ function RecipeDetails() {
   const navigate = useNavigate();
   const notify = useNotifications();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(
-    () => getRecipeById(id)?.favorite ?? false
-  );
+  const recipes = useRecipes();
   const closeDeleteDialog = useCallback(() => setIsDeleteDialogOpen(false), []);
   const { captureOpener: captureDeleteOpener, dialogRef: deleteDialogRef } = useAccessibleDialog(
     isDeleteDialogOpen,
     closeDeleteDialog
   );
 
-  const recipe = getRecipeById(id);
+  const recipe = recipes.find((savedRecipe) => String(savedRecipe.id) === String(id));
+  const isFavorite = recipe?.favorite ?? false;
 
   if (!recipe) {
     return (
@@ -59,7 +58,6 @@ function RecipeDetails() {
       return;
     }
 
-    setIsFavorite(result.recipe.favorite);
   };
 
   const confirmDelete = () => {

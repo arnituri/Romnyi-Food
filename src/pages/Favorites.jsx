@@ -1,14 +1,11 @@
-import { useState } from "react";
-import { getRecipes } from "../services/recipeService";
+import { useRecipes } from "../hooks/useRecipes";
 import RecipeCard from "../components/RecipeCard";
 import Header from "../components/Header";
 import BottomNavigation from "../components/BottomNavigation";
 
 function Favorites() {
 
-  const [favorites] = useState(() =>
-    getRecipes().filter(recipe => recipe.favorite)
-  );
+  const favorites = useRecipes().filter(recipe => recipe.favorite);
 
   return (
 

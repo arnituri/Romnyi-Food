@@ -1,6 +1,6 @@
 import Header from "../components/Header";
 import BottomNavigation from "../components/BottomNavigation";
-import { getRecipes } from "../services/recipeService";
+import { useRecipes } from "../hooks/useRecipes";
 import { getRecentRecipes } from "../utils/recentRecipes";
 import { getCanonicalRecipeCategory } from "../constants/recipeCategories";
 import "../styles/Statistics.css";
@@ -43,7 +43,7 @@ function formatDate(date) {
 }
 
 function Statistics() {
-  const recipes = getRecipes();
+  const recipes = useRecipes();
   const favoriteCount = recipes.filter((recipe) => recipe.favorite).length;
   const categoryCounts = recipes.reduce((counts, recipe) => {
     const category = getCanonicalRecipeCategory(recipe.category) || "Egyéb";

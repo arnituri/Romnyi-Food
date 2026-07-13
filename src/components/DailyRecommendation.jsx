@@ -1,12 +1,19 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getDailyRecommendation } from "../services/dailyRecommendationService";
 import RecipeImage from "./RecipeImage";
 import { hasNutritionValue } from "../utils/nutrition";
+import { useRecipeStorageChange } from "../hooks/useRecipes";
 import "../styles/DailyRecommendation.css";
 
 function DailyRecommendation() {
   const [recipe, setRecipe] = useState(() => getDailyRecommendation());
+  const refreshRecommendation = useCallback(
+    () => setRecipe(getDailyRecommendation()),
+    [],
+  );
+
+  useRecipeStorageChange(refreshRecommendation);
 
   useEffect(() => {
     let nextDayTimer;

@@ -1,6 +1,11 @@
 import { useCallback, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { addRecipe, getRecipeById, updateRecipe } from "../services/recipeService";
+import {
+  addRecipe,
+  getRecipeById,
+  getRecipeVersion,
+  updateRecipe,
+} from "../services/recipeService";
 import { optimizeRecipeImage } from "../services/imageService";
 import {
   RECIPE_CATEGORIES,
@@ -31,14 +36,20 @@ function AddRecipe() {
   const navigate = useNavigate();
   const notify = useNotifications();
   const isEditing = Boolean(id);
-  const existingRecipe = isEditing ? getRecipeById(id) : null;
+  const [existingRecipe] = useState(() => (isEditing ? getRecipeById(id) : null));
   const [initialValues] = useState(() => getFormValues(existingRecipe));
+  const [initialRecipeVersion] = useState(() => getRecipeVersion(existingRecipe));
   const [formValues, setFormValues] = useState(initialValues);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [leavePath, setLeavePath] = useState(null);
-  const [isEditUnavailable, setIsEditUnavailable] = useState(false);
+  const [editConflict, setEditConflict] = useState(null);
   const closeLeaveDialog = useCallback(() => setLeavePath(null), []);
+  const closeEditConflict = useCallback(() => setEditConflict(null), []);
   const { dialogRef: leaveDialogRef } = useAccessibleDialog(Boolean(leavePath), closeLeaveDialog);
+  const { dialogRef: editConflictDialogRef } = useAccessibleDialog(
+    Boolean(editConflict),
+    closeEditConflict,
+  );
 
   const hasUnsavedChanges =
     isEditing && JSON.stringify(formValues) !== JSON.stringify(initialValues);
@@ -79,12 +90,20 @@ function AddRecipe() {
     if (isProcessingImage) return;
 
     const result = isEditing
-      ? updateRecipe({ ...formValues, id: existingRecipe.id })
+      ? updateRecipe(
+          { ...formValues, id: existingRecipe.id },
+          initialRecipeVersion,
+        )
       : addRecipe(formValues);
 
     if (!result.success) {
-      if (isEditing && result.error === "MISSING_RECIPE") {
-        setIsEditUnavailable(true);
+      if (isEditing && (result.error === "EDIT_CONFLICT" || result.error === "MISSING_RECIPE")) {
+        setEditConflict(result.error);
+        notify.error(
+          result.error === "EDIT_CONFLICT"
+            ? result.message
+            : "A receptet közben törölték egy másik ablakban. A saját módosításaid megmaradtak.",
+        );
         return;
       }
 
@@ -106,7 +125,7 @@ function AddRecipe() {
     return true;
   };
 
-  if (isEditing && (!existingRecipe || isEditUnavailable)) {
+  if (isEditing && !existingRecipe) {
     return (
       <div className="add-page">
         <div className="add-container add-missing-recipe">
@@ -182,6 +201,50 @@ function AddRecipe() {
             <div className="add-dialog-actions">
               <button className="cancel-button" type="button" data-dialog-initial-focus onClick={closeLeaveDialog}>Maradok</button>
               <button className="save-button" type="button" onClick={() => navigate(leavePath)}>Kilépés mentés nélkül</button>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {editConflict && (
+        <div className="add-dialog-backdrop">
+          <section
+            ref={editConflictDialogRef}
+            className="add-dialog"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="edit-conflict-dialog-title"
+            aria-describedby="edit-conflict-dialog-description"
+            tabIndex="-1"
+          >
+            <h2 id="edit-conflict-dialog-title">
+              {editConflict === "EDIT_CONFLICT"
+                ? "Ez a recept időközben módosult egy másik ablakban."
+                : "A receptet közben törölték egy másik ablakban."}
+            </h2>
+            <p id="edit-conflict-dialog-description">
+              {editConflict === "EDIT_CONFLICT"
+                ? "A saját módosításaid nem lettek felülírva."
+                : "A saját módosításaid megmaradtak, de a receptet nem lehet újra létrehozni mentéssel."}
+            </p>
+            <div className="add-dialog-actions">
+              <button
+                className="cancel-button"
+                type="button"
+                data-dialog-initial-focus
+                onClick={closeEditConflict}
+              >
+                Maradok és átnézem
+              </button>
+              <button
+                className="save-button"
+                type="button"
+                onClick={() => navigate(editConflict === "EDIT_CONFLICT" ? `/recipe/${id}` : "/recipes")}
+              >
+                {editConflict === "EDIT_CONFLICT"
+                  ? "Legfrissebb verzió megnyitása"
+                  : "Receptek megnyitása"}
+              </button>
             </div>
           </section>
         </div>

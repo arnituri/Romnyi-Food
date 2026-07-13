@@ -1,6 +1,5 @@
-import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { getRecipes } from "../services/recipeService";
+import { useRecipes } from "../hooks/useRecipes";
 import RecipeCard from "../components/RecipeCard";
 import Header from "../components/Header";
 import BottomNavigation from "../components/BottomNavigation";
@@ -13,7 +12,7 @@ import {
 
 function Recipes() {
 
-  const [recipes] = useState(() => getRecipes());
+  const recipes = useRecipes();
   const [searchParams, setSearchParams] = useSearchParams();
   const search = searchParams.get("search") || "";
   const category = normalizeSupportedRecipeCategory(searchParams.get("category")) || "";

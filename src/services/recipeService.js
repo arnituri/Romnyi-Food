@@ -4,6 +4,7 @@ import { isValidRecipeCreatedAt } from "../utils/recipeDate.js";
 
 export const RECIPE_STORAGE_KEY = "recipes";
 export const RECIPE_RECOVERY_KEY_PREFIX = "romnyi-food-recipes-recovery-";
+export const RECIPE_STORAGE_UPDATED_EVENT = "romnyi-food-recipes-updated";
 const RECIPE_RECOVERED_EVENT = "romnyi-food-recipes-recovered";
 const MAX_NUTRITION_VALUE = 1000000;
 const MAX_RECIPE_STORAGE_BYTES = 4 * 1024 * 1024;
@@ -38,6 +39,10 @@ function normalizeCreatedAt(value) {
   }
 
   return value.trim();
+}
+
+function normalizeUpdatedAt(value) {
+  return normalizeCreatedAt(value);
 }
 
 function isValidRecipeId(value) {
@@ -158,6 +163,28 @@ export function generateUniqueRecipeId(existingRecipes = getRecipes()) {
   return id;
 }
 
+export function getRecipeVersion(recipe) {
+  if (!recipe || typeof recipe !== "object") {
+    return null;
+  }
+
+  return JSON.stringify({
+    id: recipe.id,
+    name: recipe.name,
+    image: recipe.image,
+    category: recipe.category,
+    calories: recipe.calories,
+    protein: recipe.protein,
+    fat: recipe.fat,
+    carbs: recipe.carbs,
+    ingredients: recipe.ingredients,
+    instructions: recipe.instructions,
+    favorite: recipe.favorite,
+    createdAt: recipe.createdAt,
+    updatedAt: recipe.updatedAt ?? null,
+  });
+}
+
 function prepareRecipeForSave(recipe, existingRecipe, recipes) {
   if (!recipe || typeof recipe !== "object" || Array.isArray(recipe)) {
     return { success: false, error: "MISSING_NAME" };
@@ -223,6 +250,7 @@ function prepareRecipeForSave(recipe, existingRecipe, recipes) {
       createdAt: existingRecipe
         ? existingRecipe.createdAt
         : normalizeCreatedAt(recipe.createdAt) ?? new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     },
   };
 }
@@ -247,7 +275,10 @@ export function isValidRecipeRecord(recipe) {
     typeof recipe.ingredients === "string" &&
     typeof recipe.instructions === "string" &&
     typeof recipe.favorite === "boolean" &&
-    (recipe.createdAt === null || normalizeCreatedAt(recipe.createdAt) !== null)
+    (recipe.createdAt === null || normalizeCreatedAt(recipe.createdAt) !== null) &&
+    (!Object.hasOwn(recipe, "updatedAt") ||
+      recipe.updatedAt === null ||
+      normalizeUpdatedAt(recipe.updatedAt) !== null)
   );
 }
 
@@ -300,7 +331,7 @@ function normalizeRecipe(recipe, index, usedIds) {
     return null;
   }
 
-  return {
+  const normalizedRecipe = {
     ...recipe,
     id: normalizeId(recipe.id, index, usedIds),
     name: normalizeText(recipe.name),
@@ -315,6 +346,12 @@ function normalizeRecipe(recipe, index, usedIds) {
     favorite: recipe.favorite === true,
     createdAt: normalizeCreatedAt(recipe.createdAt),
   };
+
+  if (Object.hasOwn(recipe, "updatedAt")) {
+    normalizedRecipe.updatedAt = normalizeUpdatedAt(recipe.updatedAt);
+  }
+
+  return normalizedRecipe;
 }
 
 function normalizeRecipes(recipes) {
@@ -393,6 +430,10 @@ export function saveRecipes(recipes) {
   if (!setStorageValue(RECIPE_STORAGE_KEY, serializedRecipes)) {
     throw new RecipeStorageError("STORAGE_WRITE_FAILED");
   }
+
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(RECIPE_STORAGE_UPDATED_EVENT));
+  }
 }
 
 export function addRecipe(recipe) {
@@ -415,7 +456,7 @@ export function addRecipe(recipe) {
   return { success: true, recipe: preparedRecipe.recipe };
 }
 
-export function updateRecipe(updatedRecipe) {
+export function updateRecipe(updatedRecipe, expectedVersion) {
   const recipes = getRecipes();
   const existingRecipe = recipes.find(
     (recipe) => String(recipe.id) === String(updatedRecipe?.id)
@@ -423,6 +464,15 @@ export function updateRecipe(updatedRecipe) {
 
   if (!existingRecipe) {
     return { success: false, error: "MISSING_RECIPE", message: getValidationMessage("MISSING_RECIPE") };
+  }
+
+  if (expectedVersion !== undefined && getRecipeVersion(existingRecipe) !== expectedVersion) {
+    return {
+      success: false,
+      error: "EDIT_CONFLICT",
+      message: "Ez a recept időközben módosult egy másik ablakban. A saját módosításaid nem lettek felülírva.",
+      recipe: existingRecipe,
+    };
   }
 
   const preparedRecipe = prepareRecipeForSave(
@@ -488,7 +538,7 @@ export function toggleFavorite(id) {
 
   const updatedRecipes = recipes.map((recipe) =>
     String(recipe.id) === String(id)
-      ? { ...recipe, favorite: !recipe.favorite }
+      ? { ...recipe, favorite: !recipe.favorite, updatedAt: new Date().toISOString() }
       : recipe
   );
 

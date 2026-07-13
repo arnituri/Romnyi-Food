@@ -6,6 +6,7 @@ import {
   deleteRecipe,
   generateUniqueRecipeId,
   getRecipeById,
+  getRecipeVersion,
   getRecipes,
   RECIPE_RECOVERY_KEY_PREFIX,
   RECIPE_STORAGE_KEY,
@@ -131,6 +132,55 @@ describe('recipeService', () => {
 
     expect(result.success).toBe(true);
     expect(getRecipes()).toEqual([expect.objectContaining({ id: 'recipe-1', name: 'Frissített recept', favorite: false })]);
+  });
+
+  it('updates an unchanged recipe when its expected version still matches', () => {
+    const originalRecipe = makeRecipe();
+    storeRecipes([originalRecipe]);
+
+    const result = updateRecipe(
+      makeRecipe({ name: 'Biztonságosan frissített recept' }),
+      getRecipeVersion(originalRecipe),
+    );
+
+    expect(result).toMatchObject({
+      success: true,
+      recipe: { name: 'Biztonságosan frissített recept' },
+    });
+    expect(result.recipe.updatedAt).toEqual(expect.any(String));
+  });
+
+  it('blocks an edit when the recipe changed after the original version was captured', () => {
+    const originalRecipe = makeRecipe();
+    storeRecipes([originalRecipe]);
+    const expectedVersion = getRecipeVersion(originalRecipe);
+    storeRecipes([
+      makeRecipe({
+        name: 'Másik ablak módosítása',
+        updatedAt: '2026-07-13T13:00:00.000Z',
+      }),
+    ]);
+
+    const result = updateRecipe(
+      makeRecipe({ name: 'Régi ablak módosítása' }),
+      expectedVersion,
+    );
+
+    expect(result).toMatchObject({ success: false, error: 'EDIT_CONFLICT' });
+    expect(getRecipeById('recipe-1')).toMatchObject({ name: 'Másik ablak módosítása' });
+  });
+
+  it('allows a legacy recipe without updatedAt to be edited safely', () => {
+    const legacyRecipe = makeRecipe();
+    storeRecipes([legacyRecipe]);
+
+    const result = updateRecipe(
+      makeRecipe({ name: 'Frissített régi recept' }),
+      getRecipeVersion(legacyRecipe),
+    );
+
+    expect(result).toMatchObject({ success: true, recipe: { name: 'Frissített régi recept' } });
+    expect(result.recipe.updatedAt).toEqual(expect.any(String));
   });
 
   it('refuses to update a missing recipe', () => {
