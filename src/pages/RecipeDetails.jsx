@@ -9,11 +9,13 @@ import {
 import Header from "../components/Header";
 import BottomNavigation from "../components/BottomNavigation";
 import RecipeImage from "../components/RecipeImage";
+import { useNotifications } from "../hooks/useNotifications";
 import "../styles/RecipeDetails.css";
 
 function RecipeDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const notify = useNotifications();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(
     () => getRecipeById(id)?.favorite ?? false
@@ -47,7 +49,7 @@ function RecipeDetails() {
     const result = toggleFavorite(recipe.id);
 
     if (!result.success) {
-      alert(`⚠️ ${result.message}`);
+      notify.error(result.message);
       return;
     }
 
@@ -59,7 +61,7 @@ function RecipeDetails() {
 
     if (!result.success) {
       setIsDeleteDialogOpen(false);
-      alert(`⚠️ ${result.message}`);
+      notify.error(result.message);
       return;
     }
 

@@ -4,6 +4,7 @@ import { addRecipe, getRecipeById, updateRecipe } from "../services/recipeServic
 import { optimizeRecipeImage } from "../services/imageService";
 import BottomNavigation from "../components/BottomNavigation";
 import RecipeImage from "../components/RecipeImage";
+import { useNotifications } from "../hooks/useNotifications";
 import "../styles/AddRecipe.css";
 
 function getFormValues(recipe) {
@@ -23,6 +24,7 @@ function getFormValues(recipe) {
 function AddRecipe() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const notify = useNotifications();
   const isEditing = Boolean(id);
   const existingRecipe = isEditing ? getRecipeById(id) : null;
   const [initialValues] = useState(() => getFormValues(existingRecipe));
@@ -56,7 +58,7 @@ function AddRecipe() {
     try {
       updateField("image", await optimizeRecipeImage(file));
     } catch (error) {
-      alert(`⚠️ ${error.message || "A kép feldolgozása nem sikerült."}`);
+      notify.error(error.message || "A kép feldolgozása nem sikerült.");
     } finally {
       setIsProcessingImage(false);
       event.target.value = "";
@@ -76,7 +78,7 @@ function AddRecipe() {
         return;
       }
 
-      alert(`⚠️ ${result.message}`);
+      notify.error(result.message);
       return;
     }
 
@@ -85,7 +87,7 @@ function AddRecipe() {
       return;
     }
 
-    alert("✅ Recept sikeresen elmentve!");
+    notify.success("Recept sikeresen elmentve!");
     setFormValues(getFormValues(null));
   };
 

@@ -6,6 +6,7 @@ import {
   getMonthlyWinningDays,
   getTodayCheatDayResult,
 } from "../services/cheatDayService";
+import { useNotifications } from "../hooks/useNotifications";
 import "../styles/CheatDay.css";
 
 const WHEEL_SEGMENTS = [
@@ -26,6 +27,7 @@ const CONFETTI_PIECES = Array.from({ length: 36 }, (_, index) => ({
 }));
 
 function CheatDay() {
+  const notify = useNotifications();
   const savedResult = getTodayCheatDayResult();
   const [result, setResult] = useState(savedResult);
   const [isSpinning, setIsSpinning] = useState(false);
@@ -81,7 +83,7 @@ function CheatDay() {
 
     const nextResult = createTodayCheatDayResult();
     if (!nextResult) {
-      alert("⚠️ A mai pörgetést nem sikerült biztonságosan elmenteni. Próbáld újra.");
+      notify.error("A mai pörgetést nem sikerült biztonságosan elmenteni. Próbáld újra.");
       return;
     }
 

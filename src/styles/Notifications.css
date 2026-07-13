@@ -1,0 +1,89 @@
+.notification-viewport {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: calc(98px + env(safe-area-inset-bottom));
+  z-index: 2100;
+  display: grid;
+  width: min(390px, calc(100vw - 32px));
+  gap: 10px;
+  pointer-events: none;
+}
+
+.notification {
+  display: grid;
+  grid-template-columns: 30px 1fr 30px;
+  align-items: start;
+  gap: 10px;
+  padding: 14px;
+  color: var(--text);
+  background: color-mix(in srgb, var(--surface-elevated) 94%, transparent);
+  border: 1px solid var(--border-strong);
+  border-left: 4px solid var(--primary);
+  border-radius: var(--radius-medium);
+  box-shadow: var(--shadow), var(--gold-shadow);
+  backdrop-filter: blur(14px);
+  pointer-events: auto;
+  animation: notification-enter .28s ease both;
+}
+
+.notification-icon {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--on-primary);
+  background: var(--primary);
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.notification p {
+  margin: 4px 0 0;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.notification-dismiss {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: var(--text-secondary);
+  background: transparent;
+  cursor: pointer;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.notification-dismiss:hover,
+.notification-dismiss:focus-visible {
+  color: var(--text);
+  background: var(--surface-light);
+  outline: none;
+}
+
+.notification-success { border-left-color: var(--notification-success); }
+.notification-success .notification-icon { background: var(--notification-success); }
+.notification-error { border-left-color: var(--danger); }
+.notification-error .notification-icon { background: var(--danger); }
+.notification-warning { border-left-color: var(--notification-warning); }
+.notification-warning .notification-icon { background: var(--notification-warning); }
+.notification-info { border-left-color: var(--notification-info); }
+.notification-info .notification-icon { background: var(--notification-info); }
+
+@keyframes notification-enter {
+  from { opacity: 0; transform: translateY(12px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 540px) {
+  .notification-viewport {
+    right: 12px;
+    bottom: calc(90px + env(safe-area-inset-bottom));
+    width: calc(100vw - 24px);
+  }
+}

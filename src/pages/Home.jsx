@@ -5,17 +5,19 @@ import QuickActions from "../components/QuickActions";
 import DailyRecommendation from "../components/DailyRecommendation";
 import Categories from "../components/Categories";
 import { getRecipes } from "../services/recipeService";
+import { useNotifications } from "../hooks/useNotifications";
 
 import "../styles/Home.css";
 
 function Home() {
   const navigate = useNavigate();
+  const notify = useNotifications();
 
   const handleRandomRecipe = () => {
     const recipes = getRecipes();
 
     if (recipes.length === 0) {
-      alert("Még nincs elmentett recept. Először adj hozzá egy újat!");
+      notify.warning("Még nincs elmentett recept. Először adj hozzá egy újat!");
       return;
     }
 

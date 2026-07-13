@@ -26,6 +26,9 @@
   --shadow: 0 14px 38px rgba(0, 0, 0, .42);
   --gold-shadow: 0 10px 30px rgba(207, 163, 75, .14);
   --nav-shadow: 0 -6px 28px rgba(0, 0, 0, .5);
+  --notification-success: #5f9d6a;
+  --notification-warning: #d09a3d;
+  --notification-info: #6c9aae;
 }
 
 :root[data-theme="light"] {
@@ -55,6 +58,9 @@
   --shadow: 0 12px 30px rgba(103, 75, 36, .1);
   --gold-shadow: 0 10px 26px rgba(154, 112, 31, .14);
   --nav-shadow: 0 -6px 26px rgba(88, 64, 31, .16);
+  --notification-success: #397248;
+  --notification-warning: #a86f16;
+  --notification-info: #3b6f88;
 }
 
 :root {
