@@ -1,0 +1,24 @@
+@import "./theme.css";
+
+.recipe-recovery-notice {
+  position: fixed;
+  z-index: 1200;
+  right: 20px;
+  bottom: 102px;
+  width: min(calc(100% - 40px), 460px);
+  padding: 16px 18px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-medium);
+  background: var(--surface-card);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+@media (max-width: 600px) {
+  .recipe-recovery-notice {
+    right: 16px;
+    bottom: 98px;
+    width: calc(100% - 32px);
+  }
+}

@@ -10,6 +10,7 @@ import Settings from "./pages/Settings";
 import RecipeDetails from "./pages/RecipeDetails";
 import CheatDay from "./pages/CheatDay";
 import Statistics from "./pages/Statistics";
+import RecipeRecoveryNotice from "./components/RecipeRecoveryNotice";
 
 function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -27,8 +28,9 @@ function App() {
   }
 
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
+    <>
+      <Routes>
+        <Route path="/" element={<Home />} />
 
       <Route path="/recipes" element={<Recipes />} />
 
@@ -46,8 +48,10 @@ function App() {
 
       <Route path="/statistics" element={<Statistics />} />
 
-      <Route path="/recipe/:id" element={<RecipeDetails />} />
-    </Routes>
+        <Route path="/recipe/:id" element={<RecipeDetails />} />
+      </Routes>
+      <RecipeRecoveryNotice />
+    </>
   );
 }
 

@@ -80,22 +80,22 @@ const handleEdit = () => {
 
           <div className="info-card">
             <h3>🔥 Kalória</h3>
-            <p>{recipe.calories || 0} kcal</p>
+            <p>{recipe.calories ?? "Nincs adat"}{recipe.calories === null ? "" : " kcal"}</p>
           </div>
 
           <div className="info-card">
             <h3>🥩 Fehérje</h3>
-            <p>{recipe.protein || 0} g</p>
+            <p>{recipe.protein ?? "Nincs adat"}{recipe.protein === null ? "" : " g"}</p>
           </div>
 
           <div className="info-card">
             <h3>🥑 Zsír</h3>
-            <p>{recipe.fat || 0} g</p>
+            <p>{recipe.fat ?? "Nincs adat"}{recipe.fat === null ? "" : " g"}</p>
           </div>
 
           <div className="info-card">
             <h3>🍚 Szénhidrát</h3>
-            <p>{recipe.carbs || 0} g</p>
+            <p>{recipe.carbs ?? "Nincs adat"}{recipe.carbs === null ? "" : " g"}</p>
           </div>
 
         </div>

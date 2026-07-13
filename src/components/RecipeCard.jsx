@@ -16,7 +16,7 @@ function RecipeCard({ recipe }) {
 
         <h2>{recipe.name}</h2>
 
-        <p>🔥 {recipe.calories} kcal</p>
+        <p>🔥 {recipe.calories ?? "Nincs adat"}{recipe.calories === null ? "" : " kcal"}</p>
 
         {recipe.protein && <p>🥩 Fehérje: {recipe.protein} g</p>}
         {recipe.fat && <p>🥑 Zsír: {recipe.fat} g</p>}
