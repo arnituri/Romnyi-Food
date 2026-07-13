@@ -11,7 +11,7 @@ function Header({ title }) {
         className="header-button"
         onClick={() => navigate("/")}
       >
-        🏠 Home
+        🏠 Főoldal
       </button>
 
       <h1 className="header-title">
