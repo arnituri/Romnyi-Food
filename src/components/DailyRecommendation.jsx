@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getDailyRecommendation } from "../services/dailyRecommendationService";
 import RecipeImage from "./RecipeImage";
+import { hasNutritionValue } from "../utils/nutrition";
 import "../styles/DailyRecommendation.css";
 
 function DailyRecommendation() {
@@ -46,7 +47,7 @@ function DailyRecommendation() {
             <h3>{recipe.name}</h3>
             <p className="daily-meta">
               {recipe.category || "Recept"}
-              {recipe.calories ? ` · ${recipe.calories} kcal` : ""}
+              {hasNutritionValue(recipe.calories) ? ` · ${recipe.calories} kcal` : ""}
             </p>
             <span className="daily-button">
               Recept megnyitása <span aria-hidden="true">→</span>

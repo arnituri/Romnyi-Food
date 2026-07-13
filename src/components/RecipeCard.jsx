@@ -1,6 +1,7 @@
 import "../styles/RecipeCard.css";
 import { useNavigate } from "react-router-dom";
 import RecipeImage from "./RecipeImage";
+import { hasNutritionValue } from "../utils/nutrition";
 
 function RecipeCard({ recipe }) {
   const navigate = useNavigate();
@@ -13,11 +14,11 @@ function RecipeCard({ recipe }) {
 
         <h2>{recipe.name}</h2>
 
-        <p>🔥 {recipe.calories ?? "Nincs adat"}{recipe.calories === null ? "" : " kcal"}</p>
+        <p>🔥 {hasNutritionValue(recipe.calories) ? recipe.calories : "Nincs adat"}{hasNutritionValue(recipe.calories) ? " kcal" : ""}</p>
 
-        {recipe.protein && <p>🥩 Fehérje: {recipe.protein} g</p>}
-        {recipe.fat && <p>🥑 Zsír: {recipe.fat} g</p>}
-        {recipe.carbs && <p>🍚 Szénhidrát: {recipe.carbs} g</p>}
+        {hasNutritionValue(recipe.protein) && <p>🥩 Fehérje: {recipe.protein} g</p>}
+        {hasNutritionValue(recipe.fat) && <p>🥑 Zsír: {recipe.fat} g</p>}
+        {hasNutritionValue(recipe.carbs) && <p>🍚 Szénhidrát: {recipe.carbs} g</p>}
 
         <button
           onClick={() => navigate(`/recipe/${recipe.id}`)}

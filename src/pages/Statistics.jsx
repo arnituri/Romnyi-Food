@@ -1,6 +1,7 @@
 import Header from "../components/Header";
 import BottomNavigation from "../components/BottomNavigation";
 import { getRecipes } from "../services/recipeService";
+import { getRecentRecipes } from "../utils/recentRecipes";
 import "../styles/Statistics.css";
 
 const NUTRIENTS = [
@@ -54,11 +55,7 @@ function Statistics() {
       secondCount - firstCount || firstCategory.localeCompare(secondCategory, "hu")
   );
   const topCategory = categories[0] || null;
-  const recentRecipes = recipes
-    .map((recipe) => ({ ...recipe, createdDate: new Date(recipe.createdAt) }))
-    .filter((recipe) => !Number.isNaN(recipe.createdDate.getTime()))
-    .sort((firstRecipe, secondRecipe) => secondRecipe.createdDate - firstRecipe.createdDate)
-    .slice(0, 3);
+  const recentRecipes = getRecentRecipes(recipes);
 
   return (
     <div className="statistics-page">
