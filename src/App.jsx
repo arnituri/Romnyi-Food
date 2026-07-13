@@ -13,19 +13,35 @@ import Statistics from "./pages/Statistics";
 import RecipeRecoveryNotice from "./components/RecipeRecoveryNotice";
 import NotFound from "./pages/NotFound";
 
+export const SPLASH_VISIBLE_DURATION = 2600;
+export const SPLASH_FADE_DURATION = 350;
+
 function App() {
   const [showSplash, setShowSplash] = useState(true);
+  const [isSplashExiting, setIsSplashExiting] = useState(false);
+  const [prefersReducedMotion] = useState(() =>
+    typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+  );
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const fadeDuration = prefersReducedMotion ? 0 : SPLASH_FADE_DURATION;
+    const exitTimer = prefersReducedMotion
+      ? null
+      : setTimeout(() => {
+          setIsSplashExiting(true);
+        }, SPLASH_VISIBLE_DURATION);
+    const hideTimer = setTimeout(() => {
       setShowSplash(false);
-    }, 5000);
+    }, SPLASH_VISIBLE_DURATION + fadeDuration);
 
-    return () => clearTimeout(timer);
-  }, []);
+    return () => {
+      if (exitTimer) clearTimeout(exitTimer);
+      clearTimeout(hideTimer);
+    };
+  }, [prefersReducedMotion]);
 
   if (showSplash) {
-    return <SplashScreen />;
+    return <SplashScreen isExiting={isSplashExiting} />;
   }
 
   return (
