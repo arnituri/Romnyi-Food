@@ -2,6 +2,10 @@ import { useCallback, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { addRecipe, getRecipeById, updateRecipe } from "../services/recipeService";
 import { optimizeRecipeImage } from "../services/imageService";
+import {
+  RECIPE_CATEGORIES,
+  RECIPE_CATEGORY_NAMES,
+} from "../constants/recipeCategories";
 import BottomNavigation from "../components/BottomNavigation";
 import RecipeImage from "../components/RecipeImage";
 import { useNotifications } from "../hooks/useNotifications";
@@ -38,6 +42,9 @@ function AddRecipe() {
 
   const hasUnsavedChanges =
     isEditing && JSON.stringify(formValues) !== JSON.stringify(initialValues);
+  const hasLegacyCategory =
+    Boolean(formValues.category) &&
+    !RECIPE_CATEGORY_NAMES.includes(formValues.category);
 
   const updateField = (field, value) => {
     setFormValues((values) => ({ ...values, [field]: value }));
@@ -140,13 +147,16 @@ function AddRecipe() {
         <input className="add-input" aria-label="Recept neve" placeholder="🍽️ Recept neve" value={formValues.name} onChange={(event) => updateField("name", event.target.value)} />
         <select className="add-input" aria-label="Kategória" value={formValues.category} onChange={(event) => updateField("category", event.target.value)}>
           <option value="">🏷️ Válassz kategóriát</option>
-          <option value="Reggeli">🍳 Reggeli</option>
-          <option value="Ebéd">🍲 Ebéd</option>
-          <option value="Vacsora">🍽️ Vacsora</option>
-          <option value="Saláta">🥗 Saláta</option>
-          <option value="Desszert">🍰 Desszert</option>
-          <option value="Ital">🥤 Ital</option>
-          <option value="Snack">🍿 Snack</option>
+          {hasLegacyCategory && (
+            <option value={formValues.category}>
+              Korábbi kategória: {formValues.category}
+            </option>
+          )}
+          {RECIPE_CATEGORIES.map((category) => (
+            <option key={category.name} value={category.name}>
+              {category.icon} {category.name}
+            </option>
+          ))}
         </select>
 
         <input className="add-input" type="number" aria-label="Kalória" min="0" step="any" placeholder="🔥 Kalória" value={formValues.calories} onChange={(event) => updateField("calories", event.target.value)} />

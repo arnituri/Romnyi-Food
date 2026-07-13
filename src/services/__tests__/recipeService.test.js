@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { getTestStorage, makeRecipe } from '../../test/setup';
+import { RECIPE_CATEGORY_NAMES } from '../../constants/recipeCategories';
 import {
   addRecipe,
   deleteRecipe,
@@ -56,6 +57,44 @@ describe('recipeService', () => {
     expect(result.recipe.name).toBe('Új recept');
     expect(result.recipe.id).toBeTruthy();
     expect(getRecipes()).toHaveLength(1);
+  });
+
+  it('accepts every supported category, including Tízórai and Uzsonna', () => {
+    RECIPE_CATEGORY_NAMES.forEach((category, index) => {
+      const result = addRecipe(
+        makeRecipe({ id: undefined, name: `${category} recept`, category }),
+      );
+
+      expect(result).toMatchObject({ success: true, recipe: { category } });
+      expect(result.recipe.id).toBeTruthy();
+      expect(getRecipes()[index]).toMatchObject({ category });
+    });
+  });
+
+  it('rejects unsupported categories for new recipes', () => {
+    const result = addRecipe(makeRecipe({ category: 'Családi kedvenc' }));
+
+    expect(result).toMatchObject({ success: false, error: 'INVALID_CATEGORY' });
+    expect(getRecipes()).toEqual([]);
+  });
+
+  it('preserves an existing legacy category while updating its other fields', () => {
+    storeRecipes([makeRecipe({ category: 'Családi kedvenc' })]);
+
+    const result = updateRecipe(
+      makeRecipe({ name: 'Frissített családi kedvenc', category: 'Családi kedvenc' }),
+    );
+
+    expect(result).toMatchObject({
+      success: true,
+      recipe: {
+        name: 'Frissített családi kedvenc',
+        category: 'Családi kedvenc',
+      },
+    });
+    expect(getRecipes()).toEqual([
+      expect.objectContaining({ category: 'Családi kedvenc' }),
+    ]);
   });
 
   it('does not save invalid recipes', () => {

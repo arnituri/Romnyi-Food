@@ -1,45 +1,7 @@
+import { RECIPE_CATEGORIES } from "../constants/recipeCategories";
 import "../styles/Categories.css";
 
 function Categories({ selectedCategory = "", onCategorySelect }) {
-  const categories = [
-    {
-      icon: "🍳",
-      name: "Reggeli",
-    },
-    {
-      icon: "🥪",
-      name: "Tízórai",
-    },
-    {
-      icon: "🥘",
-      name: "Ebéd",
-    },
-    {
-      icon: "☕",
-      name: "Uzsonna",
-    },
-    {
-      icon: "🍝",
-      name: "Vacsora",
-    },
-    {
-      icon: "🥗",
-      name: "Saláta",
-    },
-    {
-      icon: "🍰",
-      name: "Desszert",
-    },
-    {
-      icon: "🥤",
-      name: "Ital",
-    },
-    {
-      icon: "🥜",
-      name: "Snack",
-    },
-  ];
-
   return (
     <section className="categories-section">
 
@@ -49,9 +11,9 @@ function Categories({ selectedCategory = "", onCategorySelect }) {
 
       <div className="categories-grid">
 
-        {categories.map((category, index) => (
+        {RECIPE_CATEGORIES.map((category) => (
           <button
-            key={index}
+            key={category.name}
             className={
               selectedCategory === category.name
                 ? "category-card category-card-active"

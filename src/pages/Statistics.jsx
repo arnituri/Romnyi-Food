@@ -2,6 +2,7 @@ import Header from "../components/Header";
 import BottomNavigation from "../components/BottomNavigation";
 import { getRecipes } from "../services/recipeService";
 import { getRecentRecipes } from "../utils/recentRecipes";
+import { getCanonicalRecipeCategory } from "../constants/recipeCategories";
 import "../styles/Statistics.css";
 
 const NUTRIENTS = [
@@ -45,7 +46,7 @@ function Statistics() {
   const recipes = getRecipes();
   const favoriteCount = recipes.filter((recipe) => recipe.favorite).length;
   const categoryCounts = recipes.reduce((counts, recipe) => {
-    const category = recipe.category?.trim() || "Egyéb";
+    const category = getCanonicalRecipeCategory(recipe.category) || "Egyéb";
 
     counts[category] = (counts[category] || 0) + 1;
     return counts;

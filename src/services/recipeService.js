@@ -1,4 +1,5 @@
 import { readStorageValue, setStorageValue } from "./storageService.js";
+import { normalizeSupportedRecipeCategory } from "../constants/recipeCategories.js";
 
 export const RECIPE_STORAGE_KEY = "recipes";
 export const RECIPE_RECOVERY_KEY_PREFIX = "romnyi-food-recipes-recovery-";
@@ -79,6 +80,29 @@ function getValidatedText(value, errorCode, isRequired = false) {
   return { value: text };
 }
 
+function getValidatedCategory(value, existingCategory) {
+  const category = getValidatedText(value, "INVALID_CATEGORY", true);
+
+  if (category.error) {
+    return category;
+  }
+
+  const supportedCategory = normalizeSupportedRecipeCategory(category.value);
+
+  if (supportedCategory) {
+    return { value: supportedCategory };
+  }
+
+  const preservedLegacyCategory =
+    typeof existingCategory === "string" ? existingCategory.trim() : "";
+
+  if (preservedLegacyCategory && category.value === preservedLegacyCategory) {
+    return { value: preservedLegacyCategory };
+  }
+
+  return { error: "INVALID_CATEGORY" };
+}
+
 function getValidationMessage(error) {
   const messages = {
     MISSING_NAME: "Add meg a recept nevét.",
@@ -139,7 +163,7 @@ function prepareRecipeForSave(recipe, existingRecipe, recipes) {
   }
 
   const name = getValidatedText(recipe.name, "MISSING_NAME", true);
-  const category = getValidatedText(recipe.category, "INVALID_CATEGORY", true);
+  const category = getValidatedCategory(recipe.category, existingRecipe?.category);
   const image = getValidatedText(recipe.image ?? "", "INVALID_IMAGE");
   const ingredients = getValidatedText(recipe.ingredients, "MISSING_INGREDIENTS", true);
   const instructions = getValidatedText(recipe.instructions, "MISSING_INSTRUCTIONS", true);

@@ -6,19 +6,24 @@ import Header from "../components/Header";
 import BottomNavigation from "../components/BottomNavigation";
 import SearchBar from "../components/SearchBar";
 import Categories from "../components/Categories";
+import {
+  getCanonicalRecipeCategory,
+  normalizeSupportedRecipeCategory,
+} from "../constants/recipeCategories";
 
 function Recipes() {
 
   const [recipes] = useState(() => getRecipes());
   const [searchParams, setSearchParams] = useSearchParams();
   const search = searchParams.get("search") || "";
-  const category = searchParams.get("category") || "";
+  const category = normalizeSupportedRecipeCategory(searchParams.get("category")) || "";
 
   const filteredRecipes = recipes.filter((recipe) => {
     const matchesSearch = recipe.name
       .toLocaleLowerCase("hu-HU")
       .includes(search.toLocaleLowerCase("hu-HU"));
-    const matchesCategory = !category || recipe.category === category;
+    const matchesCategory =
+      !category || getCanonicalRecipeCategory(recipe.category) === category;
 
     return matchesSearch && matchesCategory;
   });
