@@ -11,6 +11,7 @@ import RecipeDetails from "./pages/RecipeDetails";
 import CheatDay from "./pages/CheatDay";
 import Statistics from "./pages/Statistics";
 import RecipeRecoveryNotice from "./components/RecipeRecoveryNotice";
+import NotFound from "./pages/NotFound";
 
 function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -49,6 +50,8 @@ function App() {
       <Route path="/statistics" element={<Statistics />} />
 
         <Route path="/recipe/:id" element={<RecipeDetails />} />
+
+        <Route path="*" element={<NotFound />} />
       </Routes>
       <RecipeRecoveryNotice />
     </>

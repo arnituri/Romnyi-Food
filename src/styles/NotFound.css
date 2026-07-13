@@ -1,0 +1,110 @@
+@import "./theme.css";
+
+.not-found-page {
+  min-height: 100vh;
+  padding-bottom: 118px;
+  background: var(--background);
+}
+
+.not-found-container {
+  display: grid;
+  width: min(100% - 40px, 860px);
+  min-height: calc(100vh - 200px);
+  margin: 0 auto;
+  place-items: center;
+  padding: 48px 0;
+}
+
+.not-found-card {
+  width: min(100%, 650px);
+  padding: clamp(32px, 7vw, 64px);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-large);
+  background: var(--surface-card);
+  box-shadow: var(--shadow), var(--gold-shadow);
+  text-align: center;
+}
+
+.not-found-code {
+  display: block;
+  color: var(--primary);
+  font-family: var(--font-display);
+  font-size: clamp(70px, 16vw, 130px);
+  font-weight: 700;
+  letter-spacing: .04em;
+  line-height: .9;
+}
+
+.not-found-eyebrow {
+  margin: 26px 0 10px;
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .15em;
+}
+
+.not-found-card h1 {
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(28px, 5vw, 42px);
+}
+
+.not-found-card > p:last-of-type {
+  max-width: 480px;
+  margin: 16px auto 0;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+.not-found-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.not-found-button {
+  min-width: 142px;
+  padding: 13px 18px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-medium);
+  background: var(--surface-elevated);
+  color: var(--text);
+  font-weight: 800;
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.not-found-button:hover {
+  border-color: var(--primary);
+  box-shadow: var(--gold-shadow);
+  transform: translateY(-1px);
+}
+
+.not-found-button:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+}
+
+.not-found-button-primary {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+@media (max-width: 600px) {
+  .not-found-container {
+    width: min(100% - 32px, 860px);
+    min-height: calc(100vh - 180px);
+    padding: 28px 0;
+  }
+
+  .not-found-actions {
+    flex-direction: column;
+  }
+
+  .not-found-button {
+    width: 100%;
+  }
+}
