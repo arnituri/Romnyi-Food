@@ -1,169 +1,132 @@
 @import "./theme.css";
 
-.daily-section{
-
-    display:flex;
-
-    flex-direction:column;
-
-    gap:20px;
-
+.daily-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.daily-title{
-
-    color:var(--primary);
-
-    font-size:32px;
-
-    margin:0;
-
+.daily-title {
+  margin: 0;
+  color: var(--primary);
+  font-size: clamp(26px, 4vw, 32px);
 }
 
-.daily-card{
-
-    background:var(--surface-card);
-
-    border-radius:var(--radius-large);
-
-    border:1px solid var(--border);
-
-    box-shadow:var(--shadow);
-
-    display:flex;
-
-    gap:30px;
-
-    padding:30px;
-
-    transition:var(--transition);
-
+.daily-card {
+  display: flex;
+  gap: 30px;
+  padding: 30px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-large);
+  background: var(--surface-card);
+  box-shadow: var(--shadow);
+  color: inherit;
+  text-decoration: none;
+  transition: var(--transition);
 }
 
-.daily-card:hover{
-
-    border-color:var(--border-strong);
-
-    box-shadow:var(--gold-shadow);
-
+.daily-card:not(.daily-card-empty):hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--gold-shadow);
+  transform: translateY(-2px);
 }
 
-.daily-image{
-
-    width:180px;
-
-    height:180px;
-
-    border-radius:var(--radius-medium);
-
-    background:var(--surface-elevated);
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    font-size:70px;
-
-    flex-shrink:0;
-
+.daily-card:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 4px;
 }
 
-.daily-content{
-
-    display:flex;
-
-    flex-direction:column;
-
-    justify-content:center;
-
-    gap:15px;
-
+.daily-image {
+  display: grid;
+  width: 180px;
+  height: 180px;
+  flex-shrink: 0;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-medium);
+  background: var(--surface-elevated);
+  font-size: 70px;
 }
 
-.daily-content h3{
-
-    margin:0;
-
-    color:var(--primary);
-
-    font-size:28px;
-
+.daily-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.daily-content p{
-
-    margin:0;
-
-    color:var(--text-secondary);
-
-    line-height:1.6;
-
+.daily-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
 }
 
-.daily-button{
-
-    align-self:flex-start;
-
-    background:var(--primary);
-
-    color:var(--on-primary);
-
-    border:none;
-
-    padding:14px 24px;
-
-    border-radius:var(--radius-small);
-
-    cursor:pointer;
-
-    font-size:16px;
-
-    font-weight:bold;
-
-    transition:var(--transition);
-
+.daily-label {
+  margin: 0;
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .12em;
 }
 
-.daily-button:hover{
-
-    background:var(--primary-hover);
-
+.daily-content h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(24px, 4vw, 30px);
+  font-family: var(--font-display);
 }
 
-@media(max-width:768px){
-
-.daily-card{
-
-flex-direction:column;
-
-align-items:center;
-
-text-align:center;
-
+.daily-meta,
+.daily-content > p:last-child {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.6;
 }
 
-.daily-content{
-
-align-items:center;
-
+.daily-button {
+  display: inline-flex;
+  gap: 9px;
+  align-items: center;
+  margin-top: 4px;
+  padding: 13px 18px;
+  border-radius: var(--radius-small);
+  background: var(--primary);
+  color: var(--on-primary);
+  font-size: 15px;
+  font-weight: 800;
 }
 
-.daily-button{
-
-align-self:center;
-
+.daily-button span {
+  font-size: 19px;
+  line-height: 1;
+  transition: transform var(--transition);
 }
 
-.daily-image{
-
-width:140px;
-
-height:140px;
-
-font-size:60px;
-
+.daily-card:hover .daily-button span {
+  transform: translateX(3px);
 }
 
+.daily-card-empty {
+  border-style: dashed;
+}
+
+@media (max-width: 768px) {
+  .daily-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .daily-content {
+    align-items: center;
+  }
+
+  .daily-image {
+    width: min(100%, 220px);
+    height: 160px;
+    font-size: 60px;
+  }
 }
