@@ -20,6 +20,7 @@ function Header({ title }) {
 
       <button
         className="header-button"
+        aria-label="Beállítások megnyitása"
         onClick={() => navigate("/settings")}
       >
         ⚙️

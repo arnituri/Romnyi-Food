@@ -134,11 +134,11 @@ function AddRecipe() {
               {isProcessingImage ? "Kép feldolgozása…" : "Kép kiválasztása"}
             </div>
           )}
-          <input className="hidden-input" type="file" accept="image/jpeg,image/png,image/webp" onChange={handleImageChange} />
+          <input className="hidden-input" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Receptkép kiválasztása" onChange={handleImageChange} />
         </label>
 
-        <input className="add-input" placeholder="🍽️ Recept neve" value={formValues.name} onChange={(event) => updateField("name", event.target.value)} />
-        <select className="add-input" value={formValues.category} onChange={(event) => updateField("category", event.target.value)}>
+        <input className="add-input" aria-label="Recept neve" placeholder="🍽️ Recept neve" value={formValues.name} onChange={(event) => updateField("name", event.target.value)} />
+        <select className="add-input" aria-label="Kategória" value={formValues.category} onChange={(event) => updateField("category", event.target.value)}>
           <option value="">🏷️ Válassz kategóriát</option>
           <option value="Reggeli">🍳 Reggeli</option>
           <option value="Ebéd">🍲 Ebéd</option>
@@ -149,12 +149,12 @@ function AddRecipe() {
           <option value="Snack">🍿 Snack</option>
         </select>
 
-        <input className="add-input" type="number" min="0" step="any" placeholder="🔥 Kalória" value={formValues.calories} onChange={(event) => updateField("calories", event.target.value)} />
-        <input className="add-input" type="number" min="0" step="any" placeholder="🥩 Fehérje (g)" value={formValues.protein} onChange={(event) => updateField("protein", event.target.value)} />
-        <input className="add-input" type="number" min="0" step="any" placeholder="🥑 Zsír (g)" value={formValues.fat} onChange={(event) => updateField("fat", event.target.value)} />
-        <input className="add-input" type="number" min="0" step="any" placeholder="🍚 Szénhidrát (g)" value={formValues.carbs} onChange={(event) => updateField("carbs", event.target.value)} />
-        <textarea className="add-textarea" rows="6" placeholder="🥕 Hozzávalók" value={formValues.ingredients} onChange={(event) => updateField("ingredients", event.target.value)} />
-        <textarea className="add-textarea" rows="8" placeholder="👨‍🍳 Elkészítés" value={formValues.instructions} onChange={(event) => updateField("instructions", event.target.value)} />
+        <input className="add-input" type="number" aria-label="Kalória" min="0" step="any" placeholder="🔥 Kalória" value={formValues.calories} onChange={(event) => updateField("calories", event.target.value)} />
+        <input className="add-input" type="number" aria-label="Fehérje" min="0" step="any" placeholder="🥩 Fehérje (g)" value={formValues.protein} onChange={(event) => updateField("protein", event.target.value)} />
+        <input className="add-input" type="number" aria-label="Zsír" min="0" step="any" placeholder="🥑 Zsír (g)" value={formValues.fat} onChange={(event) => updateField("fat", event.target.value)} />
+        <input className="add-input" type="number" aria-label="Szénhidrát" min="0" step="any" placeholder="🍚 Szénhidrát (g)" value={formValues.carbs} onChange={(event) => updateField("carbs", event.target.value)} />
+        <textarea className="add-textarea" aria-label="Hozzávalók" rows="6" placeholder="🥕 Hozzávalók" value={formValues.ingredients} onChange={(event) => updateField("ingredients", event.target.value)} />
+        <textarea className="add-textarea" aria-label="Elkészítés" rows="8" placeholder="👨‍🍳 Elkészítés" value={formValues.instructions} onChange={(event) => updateField("instructions", event.target.value)} />
 
         <div className="add-action-row">
           {isEditing && <button className="cancel-button" type="button" onClick={() => requestLeave(`/recipe/${existingRecipe.id}`)}>Mégse</button>}
