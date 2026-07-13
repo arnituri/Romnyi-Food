@@ -93,3 +93,19 @@ grid-template-columns:repeat(2,1fr);
 }
 
 }
+
+.category-card-active{
+
+    border-color:var(--primary);
+
+    box-shadow:var(--gold-shadow);
+
+}
+
+.category-clear{
+
+    border-style:dashed;
+
+    background:var(--surface-light);
+
+}

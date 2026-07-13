@@ -23,18 +23,34 @@ function Home() {
     navigate(`/recipe/${randomRecipe.id}`);
   };
 
+  const openFilteredRecipes = (filterName, filterValue) => {
+    const searchParams = new URLSearchParams();
+
+    if (filterValue) {
+      searchParams.set(filterName, filterValue);
+    }
+
+    navigate(`/recipes${searchParams.size ? `?${searchParams}` : ""}`);
+  };
+
   return (
     <Layout title="Romnyi Food">
 
       <div className="home-page">
 
-        <SearchBar />
+        <SearchBar
+          onSearchChange={(search) => openFilteredRecipes("search", search)}
+        />
 
         <QuickActions onRandomClick={handleRandomRecipe} />
 
         <DailyRecommendation />
 
-        <Categories />
+        <Categories
+          onCategorySelect={(category) =>
+            openFilteredRecipes("category", category)
+          }
+        />
 
       </div>
 
