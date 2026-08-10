@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useRecipes } from "../hooks/useRecipes";
 import RecipeCard from "../components/RecipeCard";
@@ -14,6 +15,8 @@ function Recipes() {
 
   const recipes = useRecipes();
   const [searchParams, setSearchParams] = useSearchParams();
+  const resultsRef = useRef(null);
+  const shouldScrollToResultsRef = useRef(false);
   const search = searchParams.get("search") || "";
   const category = normalizeSupportedRecipeCategory(searchParams.get("category")) || "";
 
@@ -27,7 +30,34 @@ function Recipes() {
     return matchesSearch && matchesCategory;
   });
 
-  const updateFilter = (filterName, filterValue) => {
+  useEffect(() => {
+    if (!shouldScrollToResultsRef.current) {
+      return;
+    }
+
+    shouldScrollToResultsRef.current = false;
+
+    const prefersReducedMotion = window.matchMedia?.(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    resultsRef.current?.scrollIntoView({
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+      block: "start",
+    });
+  }, [category]);
+
+  const updateFilter = (filterName, filterValue, options = {}) => {
+    const { scrollToResults = false } = options;
+
+    if (
+      filterName === "category" &&
+      scrollToResults &&
+      filterValue !== category
+    ) {
+      shouldScrollToResultsRef.current = true;
+    }
+
     const nextSearchParams = new URLSearchParams(searchParams);
 
     if (filterValue) {
@@ -53,10 +83,13 @@ function Recipes() {
           />
           <Categories
             selectedCategory={category}
-            onCategorySelect={(value) => updateFilter("category", value)}
+            onCategorySelect={(value) =>
+              updateFilter("category", value, { scrollToResults: true })
+            }
           />
         </div>
 
+        <section className="recipe-results-section" ref={resultsRef}>
         {recipes.length === 0 ? (
 
           <h2
@@ -91,6 +124,7 @@ function Recipes() {
           ))
 
         )}
+        </section>
 
       </div>
 

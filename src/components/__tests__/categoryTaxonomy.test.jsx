@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { RECIPE_CATEGORY_NAMES } from '../../constants/recipeCategories';
 import AddRecipe from '../../pages/AddRecipe';
 import Recipes from '../../pages/Recipes';
@@ -45,5 +45,38 @@ describe('recipe category taxonomy', () => {
 
     expect(screen.getByText('Tízórai recept')).toBeInTheDocument();
     expect(screen.queryByText('Ebéd recept')).not.toBeInTheDocument();
+  });
+
+  it('scrolls to the updated results only after a category selection', async () => {
+    const scrollIntoView = vi.fn();
+    Object.defineProperty(Element.prototype, 'scrollIntoView', {
+      configurable: true,
+      value: scrollIntoView,
+    });
+
+    localStorage.setItem(
+      RECIPE_STORAGE_KEY,
+      JSON.stringify([
+        makeRecipe({ id: 'uzsonna', name: 'Uzsonna recept', category: 'Uzsonna' }),
+        makeRecipe({ id: 'ebed', name: 'Ebéd recept', category: 'Ebéd' }),
+      ]),
+    );
+
+    render(
+      <MemoryRouter initialEntries={['/recipes']}>
+        <Recipes />
+      </MemoryRouter>,
+    );
+
+    expect(scrollIntoView).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: /Uzsonna/i }));
+
+    await waitFor(() => {
+      expect(scrollIntoView).toHaveBeenCalledWith({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
   });
 });
