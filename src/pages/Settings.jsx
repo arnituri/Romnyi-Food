@@ -15,9 +15,6 @@ import { useNotifications } from "../hooks/useNotifications";
 import "../styles/Settings.css";
 
 export const MAX_BACKUP_IMPORT_SIZE_BYTES = 10 * 1024 * 1024;
-// iOS Files applies the extension filter more reliably than application/json
-// in WKWebView. The imported content remains strictly validated below.
-export const BACKUP_IMPORT_ACCEPT = ".json";
 
 function Settings() {
   const navigate = useNavigate();
@@ -204,7 +201,6 @@ function Settings() {
               ref={fileInputRef}
               className="settings-file-input"
               type="file"
-              accept={BACKUP_IMPORT_ACCEPT}
               onChange={handleImportFile}
             />
           </div>

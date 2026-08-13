@@ -5,10 +5,7 @@ import { NotificationProvider } from "../../components/NotificationProvider";
 import { createBackup } from "../../services/backupService";
 import { getTestStorage } from "../../test/setup";
 import { THEME_STORAGE_KEY } from "../../services/themeService";
-import Settings, {
-  BACKUP_IMPORT_ACCEPT,
-  MAX_BACKUP_IMPORT_SIZE_BYTES,
-} from "../Settings";
+import Settings, { MAX_BACKUP_IMPORT_SIZE_BYTES } from "../Settings";
 
 function renderSettings() {
   return render(
@@ -47,12 +44,12 @@ describe("Settings theme persistence", () => {
   });
 });
 
-function createBackupFile(size) {
-  const file = new File([JSON.stringify(createBackup())], "mentes.json", {
-    type: "application/json",
+function createBackupFile(size, content = JSON.stringify(createBackup())) {
+  const file = new File([content], "mentes.json", {
+    type: "",
   });
   Object.defineProperty(file, "size", { value: size });
-  file.text = vi.fn().mockResolvedValue(JSON.stringify(createBackup()));
+  file.text = vi.fn().mockResolvedValue(content);
   return file;
 }
 
@@ -62,13 +59,10 @@ function importBackupFile(file) {
 }
 
 describe("Settings backup import size limit", () => {
-  it("uses an extension-based JSON filter so iOS Files can select backups", () => {
+  it("does not use a native file-type filter that can disable iOS Files selections", () => {
     renderSettings();
 
-    expect(document.querySelector('input[type="file"]')).toHaveAttribute(
-      "accept",
-      BACKUP_IMPORT_ACCEPT,
-    );
+    expect(document.querySelector('input[type="file"]')).not.toHaveAttribute("accept");
   });
 
   it("accepts a valid backup below the maximum size", async () => {
@@ -106,6 +100,28 @@ describe("Settings backup import size limit", () => {
     });
     expect(file.text).not.toHaveBeenCalled();
     expect(localStorage.getItem("recipes")).toBe(existingRecipes);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("rejects invalid JSON after selection", async () => {
+    renderSettings();
+
+    importBackupFile(createBackupFile(24, "nem JSON"));
+
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "A kiválasztott fájl nem olvasható JSON biztonsági mentés.",
+    );
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("rejects a JSON file that is not a Romnyi Food backup", async () => {
+    renderSettings();
+
+    importBackupFile(createBackupFile(2, "{}"));
+
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Ez a fájl nem érvényes Romnyi Food biztonsági mentés.",
+    );
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 });
