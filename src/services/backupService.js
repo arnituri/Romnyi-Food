@@ -11,7 +11,11 @@ import {
   isValidCheatDayBackupData,
 } from "./cheatDayService";
 import { DAILY_RECOMMENDATION_STORAGE_KEY } from "./dailyRecommendationService";
-import { applyStorageTransaction, getStorageKeys } from "./storageService";
+import {
+  applyStorageTransaction,
+  getStorageKeys,
+  readStorageValue,
+} from "./storageService";
 import {
   applyThemeToDocument,
   getTheme,
@@ -22,6 +26,8 @@ import {
 
 const BACKUP_FORMAT = "romnyi-food-backup";
 const BACKUP_VERSION = 1;
+export const IOS_CONSERVATIVE_WEB_STORAGE_LIMIT_BYTES = 5 * 1024 * 1024;
+export const RESTORE_STORAGE_LIMIT_ERROR = "RESTORE_STORAGE_LIMIT";
 const RESTORE_KEYS = [
   RECIPE_STORAGE_KEY,
   THEME_STORAGE_KEY,
@@ -58,6 +64,42 @@ function createRestorePayload(backup) {
   }
 }
 
+export function getConservativeStorageSize(value) {
+  return typeof value === "string" ? value.length * 2 : 0;
+}
+
+export function estimateRestoreStorageFootprint(backup) {
+  const restorePayload = createRestorePayload(backup);
+  const storageKeys = getStorageKeys();
+
+  if (!restorePayload || !storageKeys) {
+    return null;
+  }
+
+  const restoreKeys = new Set(restorePayload.keys());
+  let size = 0;
+
+  for (const key of storageKeys) {
+    if (restoreKeys.has(key)) continue;
+
+    const storedValue = readStorageValue(key);
+    if (!storedValue.success) return null;
+
+    size += getConservativeStorageSize(key) + getConservativeStorageSize(storedValue.value);
+  }
+
+  for (const [key, value] of restorePayload) {
+    if (value === null) continue;
+    size += getConservativeStorageSize(key) + getConservativeStorageSize(value);
+  }
+
+  return size;
+}
+
+function isIosCapacitor() {
+  return globalThis.Capacitor?.getPlatform?.() === "ios";
+}
+
 export function createBackup() {
   return {
     format: BACKUP_FORMAT,
@@ -92,6 +134,15 @@ export function restoreBackup(backup) {
 
   if (!restorePayload) {
     throw new Error("INVALID_BACKUP");
+  }
+
+  const estimatedStorageFootprint = estimateRestoreStorageFootprint(backup);
+  if (
+    isIosCapacitor() &&
+    estimatedStorageFootprint !== null &&
+    estimatedStorageFootprint > IOS_CONSERVATIVE_WEB_STORAGE_LIMIT_BYTES
+  ) {
+    throw new Error(RESTORE_STORAGE_LIMIT_ERROR);
   }
 
   const didRestore = applyStorageTransaction(

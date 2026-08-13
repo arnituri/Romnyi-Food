@@ -114,6 +114,74 @@ describe("Settings backup import size limit", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
+  it("shows a visible notification when restoring cannot be persisted", async () => {
+    renderSettings();
+    const backup = createBackup();
+    backup.data.recipes = [
+      {
+        id: "recipe-1",
+        name: "Teszt recept",
+        image: "",
+        category: "Ebéd",
+        calories: 450,
+        protein: 25,
+        fat: 12,
+        carbs: 48,
+        ingredients: "Hozzávaló",
+        instructions: "Elkészítés",
+        favorite: false,
+        createdAt: "2026-07-13T12:00:00.000Z",
+      },
+    ];
+    getTestStorage().failOnWrite(1);
+
+    importBackupFile(createBackupFile(100, JSON.stringify(backup)));
+    await screen.findByRole("dialog", { name: /biztonsági mentés visszaállítása/i });
+    fireEvent.click(screen.getByRole("button", { name: "Visszaállítás" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "A biztonsági mentés visszaállítása nem sikerült. A meglévő adataid változatlanok maradtak."
+    );
+  });
+
+  it("shows the specific iOS storage notification before an unsafe restore writes data", async () => {
+    const originalCapacitor = globalThis.Capacitor;
+    globalThis.Capacitor = { getPlatform: () => "ios" };
+    const existingRecipes = JSON.stringify([{ id: "meglevo", name: "Meglévő recept" }]);
+    localStorage.setItem("recipes", existingRecipes);
+    renderSettings();
+    const backup = createBackup();
+    backup.data.recipes = [
+      {
+        id: "recipe-1",
+        name: "Teszt recept",
+        image: `data:image/webp;base64,${"a".repeat(5 * 1024 * 1024)}`,
+        category: "Ebéd",
+        calories: 450,
+        protein: 25,
+        fat: 12,
+        carbs: 48,
+        ingredients: "Hozzávaló",
+        instructions: "Elkészítés",
+        favorite: false,
+        createdAt: "2026-07-13T12:00:00.000Z",
+      },
+    ];
+
+    try {
+      importBackupFile(createBackupFile(100, JSON.stringify(backup)));
+      await screen.findByRole("dialog", { name: /biztonsági mentés visszaállítása/i });
+      fireEvent.click(screen.getByRole("button", { name: "Visszaállítás" }));
+
+      expect(await screen.findByRole("alert")).toHaveTextContent(
+        "A mentés képekkel együtt túl nagy az iPhone helyi tárhelyéhez. A jelenlegi adataid nem változtak."
+      );
+      expect(localStorage.getItem("recipes")).toBe(existingRecipes);
+    } finally {
+      globalThis.Capacitor = originalCapacitor;
+    }
+  });
+
   it("rejects a JSON file that is not a Romnyi Food backup", async () => {
     renderSettings();
 

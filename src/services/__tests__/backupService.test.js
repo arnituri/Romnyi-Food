@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { getTestStorage, makeRecipe } from '../../test/setup';
 import {
   createBackup,
+  estimateRestoreStorageFootprint,
+  getConservativeStorageSize,
+  IOS_CONSERVATIVE_WEB_STORAGE_LIMIT_BYTES,
+  RESTORE_STORAGE_LIMIT_ERROR,
   restoreBackup,
   validateBackup,
 } from '../backupService';
@@ -23,6 +27,16 @@ function makeValidBackup() {
 }
 
 describe('backupService', () => {
+  it('uses a conservative UTF-16 storage estimate for restore payloads', () => {
+    const backup = makeValidBackup();
+    const footprint = estimateRestoreStorageFootprint(backup);
+
+    expect(getConservativeStorageSize('abc')).toBe(6);
+    expect(footprint).toBeGreaterThan(
+      getConservativeStorageSize(JSON.stringify(backup.data.recipes)),
+    );
+  });
+
   it('accepts and restores a valid backup transactionally', () => {
     const backup = makeValidBackup();
     localStorage.setItem(RECIPE_STORAGE_KEY, JSON.stringify([makeRecipe({ id: 'old' })]));
@@ -80,5 +94,21 @@ describe('backupService', () => {
     expect(localStorage.getItem(RECIPE_STORAGE_KEY)).toBe(originalRecipes);
     expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('dark');
     expect(localStorage.getItem(DAILY_RECOMMENDATION_STORAGE_KEY)).toBe('old-recommendation');
+  });
+
+  it('aborts an unsafe iOS restore before it writes any data', () => {
+    const backup = makeValidBackup();
+    backup.data.recipes[0].image = `data:image/webp;base64,${'a'.repeat(IOS_CONSERVATIVE_WEB_STORAGE_LIMIT_BYTES)}`;
+    const originalRecipes = JSON.stringify([makeRecipe({ id: 'old' })]);
+    localStorage.setItem(RECIPE_STORAGE_KEY, originalRecipes);
+    const originalCapacitor = globalThis.Capacitor;
+    globalThis.Capacitor = { getPlatform: () => 'ios' };
+
+    try {
+      expect(() => restoreBackup(backup)).toThrow(RESTORE_STORAGE_LIMIT_ERROR);
+      expect(localStorage.getItem(RECIPE_STORAGE_KEY)).toBe(originalRecipes);
+    } finally {
+      globalThis.Capacitor = originalCapacitor;
+    }
   });
 });

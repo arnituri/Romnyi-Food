@@ -5,10 +5,12 @@ import BottomNavigation from "../components/BottomNavigation";
 import {
   createBackup,
   downloadBackup,
+  RESTORE_STORAGE_LIMIT_ERROR,
   resetAppData,
   restoreBackup,
   validateBackup,
 } from "../services/backupService";
+import { readTextFile } from "../utils/fileReader";
 import { applyTheme, applyThemeToDocument, getTheme } from "../services/themeService";
 import { useAccessibleDialog } from "../hooks/useAccessibleDialog";
 import { useNotifications } from "../hooks/useNotifications";
@@ -66,7 +68,7 @@ function Settings() {
     }
 
     try {
-      const backup = JSON.parse(await file.text());
+      const backup = JSON.parse(await readTextFile(file));
 
       if (!validateBackup(backup)) {
         setNotice({
@@ -92,11 +94,16 @@ function Settings() {
         setTheme(getTheme());
         setPendingAction(null);
         navigate("/recipes", { replace: true });
-      } catch {
+      } catch (error) {
         setPendingAction(null);
+        const text =
+          error?.message === RESTORE_STORAGE_LIMIT_ERROR
+            ? "A mentés képekkel együtt túl nagy az iPhone helyi tárhelyéhez. A jelenlegi adataid nem változtak."
+            : "A biztonsági mentés visszaállítása nem sikerült. A meglévő adataid változatlanok maradtak.";
+        notify.error(text);
         setNotice({
           type: "error",
-          text: "A biztonsági mentés visszaállítása nem sikerült. A meglévő adataid változatlanok maradtak.",
+          text,
         });
       }
       return;
