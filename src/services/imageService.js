@@ -9,6 +9,19 @@ export const MAX_IMAGE_DIMENSION = 1400;
 export const MAX_PROCESSED_IMAGE_BYTES = 1200 * 1024;
 const WEBP_QUALITY = 0.84;
 
+// WKWebView can return a PNG Blob when WebP encoding is requested, and its
+// resulting Blob can remain unexpectedly large for high-resolution iPhone photos.
+// Keep the first pass unchanged for browsers that support WebP, then progressively
+// reduce only when the encoded result still cannot be stored safely.
+export const IMAGE_COMPRESSION_STEPS = Object.freeze([
+  { maxDimension: MAX_IMAGE_DIMENSION, quality: WEBP_QUALITY },
+  { maxDimension: 1200, quality: 0.8 },
+  { maxDimension: 1000, quality: 0.76 },
+  { maxDimension: 840, quality: 0.72 },
+  { maxDimension: 720, quality: 0.68 },
+  { maxDimension: 640, quality: 0.64 },
+]);
+
 export class ImageUploadError extends Error {
   constructor(message) {
     super(message);
@@ -38,18 +51,66 @@ function canvasToBlob(canvas, type, quality) {
   return new Promise((resolve) => canvas.toBlob(resolve, type, quality));
 }
 
-function getResizedDimensions(width, height) {
+export function getResizedDimensions(width, height, maxDimension = MAX_IMAGE_DIMENSION) {
   const longestSide = Math.max(width, height);
 
-  if (longestSide <= MAX_IMAGE_DIMENSION) {
+  if (longestSide <= maxDimension) {
     return { width, height };
   }
 
-  const scale = MAX_IMAGE_DIMENSION / longestSide;
+  const scale = maxDimension / longestSide;
   return {
     width: Math.round(width * scale),
     height: Math.round(height * scale),
   };
+}
+
+export function isWebpBlob(blob) {
+  return Boolean(blob && blob.type === "image/webp");
+}
+
+function createCanvas(source, maxDimension) {
+  const { width, height } = getResizedDimensions(
+    source.naturalWidth,
+    source.naturalHeight,
+    maxDimension,
+  );
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+
+  const context = canvas.getContext("2d");
+  if (!context) {
+    throw new ImageUploadError("A kép feldolgozása nem támogatott ebben a böngészőben.");
+  }
+
+  if ("imageSmoothingQuality" in context) {
+    context.imageSmoothingQuality = "high";
+  }
+
+  // The browser's image decoder applies the displayed EXIF orientation before
+  // drawing, including in iOS/WKWebView.
+  context.drawImage(source, 0, 0, width, height);
+  return canvas;
+}
+
+export async function getCompressedBlob(canvas, quality) {
+  const webpOutput = await canvasToBlob(canvas, "image/webp", quality);
+
+  // Safari/WebKit can silently fall back to PNG while reporting a non-null Blob.
+  // Treat that as unsupported WebP and explicitly encode JPEG instead.
+  if (isWebpBlob(webpOutput) && webpOutput.size <= MAX_PROCESSED_IMAGE_BYTES) {
+    return webpOutput;
+  }
+
+  const jpegOutput = await canvasToBlob(canvas, "image/jpeg", quality);
+  if (jpegOutput && jpegOutput.type === "image/jpeg") {
+    return jpegOutput;
+  }
+
+  // A supported WebP result is still useful if JPEG encoding is unavailable;
+  // the caller will retry it at a smaller size if it exceeds the limit.
+  return isWebpBlob(webpOutput) ? webpOutput : null;
 }
 
 export function getDataUrlByteSize(dataUrl) {
@@ -80,36 +141,30 @@ export async function optimizeRecipeImage(file) {
     if (!source.naturalWidth || !source.naturalHeight) {
       throw new ImageUploadError("A kiválasztott kép nem tartalmaz érvényes méreteket.");
     }
-    const { width, height } = getResizedDimensions(source.naturalWidth, source.naturalHeight);
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
+    for (const { maxDimension, quality } of IMAGE_COMPRESSION_STEPS) {
+      const canvas = createCanvas(source, maxDimension);
 
-    const context = canvas.getContext("2d");
-    if (!context) {
-      throw new ImageUploadError("A kép feldolgozása nem támogatott ebben a böngészőben.");
+      try {
+        const output = await getCompressedBlob(canvas, quality);
+
+        if (!output || output.size > MAX_PROCESSED_IMAGE_BYTES) {
+          continue;
+        }
+
+        const imageDataUrl = await readBlobAsDataUrl(output);
+        if (getDataUrlByteSize(imageDataUrl) <= MAX_PROCESSED_IMAGE_BYTES) {
+          return imageDataUrl;
+        }
+      } finally {
+        // Release each large backing store before trying the next pass on mobile.
+        canvas.width = 0;
+        canvas.height = 0;
+      }
     }
 
-    context.drawImage(source, 0, 0, width, height);
-    let output = await canvasToBlob(canvas, "image/webp", WEBP_QUALITY);
-
-    if (!output) {
-      output = await canvasToBlob(canvas, "image/jpeg", WEBP_QUALITY);
-    }
-
-    if (!output) {
-      throw new ImageUploadError("A kép tömörítése nem sikerült.");
-    }
-
-    const imageDataUrl = await readBlobAsDataUrl(output);
-
-    if (getDataUrlByteSize(imageDataUrl) > MAX_PROCESSED_IMAGE_BYTES) {
-      throw new ImageUploadError(
-        "A feldolgozott kép még mindig túl nagy a biztonságos mentéshez. Válassz kisebb képet."
-      );
-    }
-
-    return imageDataUrl;
+    throw new ImageUploadError(
+      "A feldolgozott kép még mindig túl nagy a biztonságos mentéshez. Válassz kisebb képet."
+    );
   } finally {
     URL.revokeObjectURL(objectUrl);
   }
