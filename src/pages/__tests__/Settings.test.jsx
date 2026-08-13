@@ -5,7 +5,10 @@ import { NotificationProvider } from "../../components/NotificationProvider";
 import { createBackup } from "../../services/backupService";
 import { getTestStorage } from "../../test/setup";
 import { THEME_STORAGE_KEY } from "../../services/themeService";
-import Settings, { MAX_BACKUP_IMPORT_SIZE_BYTES } from "../Settings";
+import Settings, {
+  BACKUP_IMPORT_ACCEPT,
+  MAX_BACKUP_IMPORT_SIZE_BYTES,
+} from "../Settings";
 
 function renderSettings() {
   return render(
@@ -59,6 +62,15 @@ function importBackupFile(file) {
 }
 
 describe("Settings backup import size limit", () => {
+  it("uses an extension-based JSON filter so iOS Files can select backups", () => {
+    renderSettings();
+
+    expect(document.querySelector('input[type="file"]')).toHaveAttribute(
+      "accept",
+      BACKUP_IMPORT_ACCEPT,
+    );
+  });
+
   it("accepts a valid backup below the maximum size", async () => {
     renderSettings();
 
