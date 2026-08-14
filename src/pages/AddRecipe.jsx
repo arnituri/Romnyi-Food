@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   addRecipe,
@@ -6,7 +6,8 @@ import {
   getRecipeVersion,
   updateRecipe,
 } from "../services/recipeService";
-import { optimizeRecipeImage } from "../services/imageService";
+import { optimizeRecipeImageBlob } from "../services/imageService";
+import { saveRecipeWithImage } from "../services/recipeImagePersistenceService";
 import {
   RECIPE_CATEGORIES,
   RECIPE_CATEGORY_NAMES,
@@ -42,6 +43,9 @@ function AddRecipe() {
   const [initialRecipeVersion] = useState(() => getRecipeVersion(existingRecipe));
   const [formValues, setFormValues] = useState(initialValues);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [pendingImage, setPendingImage] = useState(null);
+  const [isImageRemoved, setIsImageRemoved] = useState(false);
   const [leavePath, setLeavePath] = useState(null);
   const [editConflict, setEditConflict] = useState(null);
   const closeLeaveDialog = useCallback(() => setLeavePath(null), []);
@@ -53,7 +57,10 @@ function AddRecipe() {
   );
 
   const hasUnsavedChanges =
-    isEditing && JSON.stringify(formValues) !== JSON.stringify(initialValues);
+    isEditing &&
+    (JSON.stringify(formValues) !== JSON.stringify(initialValues) ||
+      Boolean(pendingImage) ||
+      isImageRemoved);
   const hasLegacyCategory =
     Boolean(formValues.category) &&
     !RECIPE_CATEGORY_NAMES.includes(formValues.category);
@@ -61,6 +68,14 @@ function AddRecipe() {
   const updateField = (field, value) => {
     setFormValues((values) => ({ ...values, [field]: value }));
   };
+
+  useEffect(() => {
+    return () => {
+      if (pendingImage?.previewUrl) {
+        URL.revokeObjectURL(pendingImage.previewUrl);
+      }
+    };
+  }, [pendingImage?.previewUrl]);
 
   const requestLeave = (path) => {
     if (isEditing && hasUnsavedChanges) {
@@ -78,7 +93,13 @@ function AddRecipe() {
     setIsProcessingImage(true);
 
     try {
-      updateField("image", await optimizeRecipeImage(file));
+      const imageBlob = await optimizeRecipeImageBlob(file);
+      setPendingImage({
+        blob: imageBlob,
+        previewUrl: URL.createObjectURL(imageBlob),
+      });
+      updateField("image", "");
+      setIsImageRemoved(false);
     } catch (error) {
       notify.error(error.message || "A kép feldolgozása nem sikerült.");
     } finally {
@@ -87,16 +108,13 @@ function AddRecipe() {
     }
   };
 
-  const saveRecipe = () => {
-    if (isProcessingImage) return;
+  const removeImage = () => {
+    setPendingImage(null);
+    updateField("image", "");
+    setIsImageRemoved(true);
+  };
 
-    const result = isEditing
-      ? updateRecipe(
-          { ...formValues, id: existingRecipe.id },
-          initialRecipeVersion,
-        )
-      : addRecipe(formValues);
-
+  const handleSaveResult = (result) => {
     if (!result.success) {
       if (isEditing && (result.error === "EDIT_CONFLICT" || result.error === "MISSING_RECIPE")) {
         setEditConflict(result.error);
@@ -112,6 +130,10 @@ function AddRecipe() {
       return;
     }
 
+    if (result.imageCleanupFailed) {
+      notify.warning(result.cleanupMessage);
+    }
+
     if (isEditing) {
       navigate(`/recipe/${result.recipe.id}`, { replace: true });
       return;
@@ -119,6 +141,32 @@ function AddRecipe() {
 
     notify.success("Recept sikeresen elmentve!");
     setFormValues(getFormValues(null));
+    setPendingImage(null);
+    setIsImageRemoved(false);
+  };
+
+  const saveRecipe = () => {
+    if (isProcessingImage || isSaving) return;
+
+    if (!pendingImage && !isImageRemoved) {
+      const result = isEditing
+        ? updateRecipe({ ...formValues, id: existingRecipe.id }, initialRecipeVersion)
+        : addRecipe(formValues);
+      handleSaveResult(result);
+      return;
+    }
+
+    setIsSaving(true);
+    void saveRecipeWithImage({
+      recipe: formValues,
+      existingRecipe: isEditing ? existingRecipe : null,
+      expectedVersion: initialRecipeVersion,
+      imageBlob: pendingImage?.blob,
+      removeImage: isImageRemoved,
+    })
+      .then(handleSaveResult)
+      .catch(() => notify.error("A recept mentése nem sikerült. A korábbi adatok változatlanok maradtak."))
+      .finally(() => setIsSaving(false));
   };
 
   const handleBottomNavigation = (path) => {
@@ -153,10 +201,10 @@ function AddRecipe() {
           aria-label="Receptkép kiválasztása"
           onClick={() => imageInputRef.current?.click()}
         >
-          {formValues.image || existingRecipe?.imageId ? (
+          {pendingImage?.previewUrl || formValues.image || (!isImageRemoved && existingRecipe?.imageId) ? (
             <RecipeImage
-              src={formValues.image}
-              imageId={formValues.image ? undefined : existingRecipe?.imageId}
+              src={pendingImage?.previewUrl || formValues.image}
+              imageId={pendingImage || formValues.image || isImageRemoved ? undefined : existingRecipe?.imageId}
               alt="Recept előnézet"
               className="image-upload-preview"
               fallbackClassName="image-upload-preview-fallback"
@@ -168,6 +216,11 @@ function AddRecipe() {
             </div>
           )}
         </button>
+        {(pendingImage || formValues.image || (!isImageRemoved && existingRecipe?.imageId)) && (
+          <button className="remove-image-button" type="button" onClick={removeImage}>
+            Kép eltávolítása
+          </button>
+        )}
         <input
           ref={imageInputRef}
           className="hidden-input"
@@ -202,8 +255,8 @@ function AddRecipe() {
 
         <div className="add-action-row">
           {isEditing && <button className="cancel-button" type="button" onClick={() => requestLeave(`/recipe/${existingRecipe.id}`)}>Mégse</button>}
-          <button className="save-button" type="button" onClick={saveRecipe} disabled={isProcessingImage}>
-            {isProcessingImage ? "Kép feldolgozása…" : "💾 Recept mentése"}
+          <button className="save-button" type="button" onClick={saveRecipe} disabled={isProcessingImage || isSaving}>
+            {isProcessingImage ? "Kép feldolgozása…" : isSaving ? "Recept mentése…" : "💾 Recept mentése"}
           </button>
         </div>
       </div>

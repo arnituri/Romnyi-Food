@@ -1,9 +1,10 @@
 import { useCallback, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  toggleFavorite,
   deleteRecipe,
+  toggleFavorite,
 } from "../services/recipeService";
+import { deleteRecipeWithImage } from "../services/recipeImagePersistenceService";
 
 import Header from "../components/Header";
 import BottomNavigation from "../components/BottomNavigation";
@@ -60,8 +61,7 @@ function RecipeDetails() {
 
   };
 
-  const confirmDelete = () => {
-    const result = deleteRecipe(recipe.id);
+  const handleDeleteResult = (result) => {
 
     if (!result.success) {
       setIsDeleteDialogOpen(false);
@@ -69,7 +69,20 @@ function RecipeDetails() {
       return;
     }
 
+    if (result.imageCleanupFailed) {
+      notify.warning(result.cleanupMessage);
+    }
+
     navigate("/recipes");
+  };
+
+  const confirmDelete = () => {
+    if (!recipe.imageId) {
+      handleDeleteResult(deleteRecipe(recipe.id));
+      return;
+    }
+
+    void deleteRecipeWithImage(recipe).then(handleDeleteResult);
   };
 
 const handleEdit = () => {

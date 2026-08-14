@@ -121,7 +121,7 @@ export function getDataUrlByteSize(dataUrl) {
   return Math.ceil((base64.length * 3) / 4);
 }
 
-export async function optimizeRecipeImage(file) {
+export async function optimizeRecipeImageBlob(file) {
   if (typeof File === "undefined" || !(file instanceof File)) {
     throw new ImageUploadError("Nem sikerült képfájlt kiválasztani.");
   }
@@ -151,10 +151,7 @@ export async function optimizeRecipeImage(file) {
           continue;
         }
 
-        const imageDataUrl = await readBlobAsDataUrl(output);
-        if (getDataUrlByteSize(imageDataUrl) <= MAX_PROCESSED_IMAGE_BYTES) {
-          return imageDataUrl;
-        }
+        return output;
       } finally {
         // Release each large backing store before trying the next pass on mobile.
         canvas.width = 0;
@@ -168,4 +165,19 @@ export async function optimizeRecipeImage(file) {
   } finally {
     URL.revokeObjectURL(objectUrl);
   }
+}
+
+// Kept for legacy callers. New locally selected recipe images use the Blob
+// returned by optimizeRecipeImageBlob and are stored in IndexedDB instead.
+export async function optimizeRecipeImage(file) {
+  const output = await optimizeRecipeImageBlob(file);
+  const imageDataUrl = await readBlobAsDataUrl(output);
+
+  if (getDataUrlByteSize(imageDataUrl) > MAX_PROCESSED_IMAGE_BYTES) {
+    throw new ImageUploadError(
+      "A feldolgozott kép még mindig túl nagy a biztonságos mentéshez. Válassz kisebb képet."
+    );
+  }
+
+  return imageDataUrl;
 }

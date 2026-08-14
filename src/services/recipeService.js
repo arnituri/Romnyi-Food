@@ -236,7 +236,7 @@ function prepareRecipeForSave(recipe, existingRecipe, recipes) {
     return { success: false, error: "DUPLICATE_ID" };
   }
 
-  return {
+  const savedRecipe = {
     success: true,
     recipe: {
       ...existingRecipe,
@@ -258,6 +258,18 @@ function prepareRecipeForSave(recipe, existingRecipe, recipes) {
       updatedAt: new Date().toISOString(),
     },
   };
+
+  if (Object.hasOwn(recipe, "imageId")) {
+    const imageId = normalizeImageId(recipe.imageId);
+
+    if (imageId) {
+      savedRecipe.recipe.imageId = imageId;
+    } else {
+      delete savedRecipe.recipe.imageId;
+    }
+  }
+
+  return savedRecipe;
 }
 
 function isValidBackupNutritionValue(value) {
