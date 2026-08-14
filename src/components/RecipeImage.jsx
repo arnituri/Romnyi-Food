@@ -1,10 +1,64 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getImage } from "../services/imageDatabaseService";
 
-function RecipeImage({ src, alt, decorative = false, className, fallbackClassName = "" }) {
+function RecipeImage({
+  src,
+  imageId,
+  alt,
+  decorative = false,
+  className,
+  fallbackClassName = "",
+}) {
+  const [indexedDbSource, setIndexedDbSource] = useState(null);
+  const resolvedSource =
+    imageId && indexedDbSource?.imageId === imageId ? indexedDbSource.source : imageId ? null : src;
+
+  useEffect(() => {
+    let isCurrent = true;
+    let objectUrl;
+    let hasRevokedObjectUrl = false;
+
+    const revokeObjectUrl = () => {
+      if (
+        objectUrl &&
+        !hasRevokedObjectUrl &&
+        typeof URL.revokeObjectURL === "function"
+      ) {
+        URL.revokeObjectURL(objectUrl);
+        hasRevokedObjectUrl = true;
+      }
+    };
+
+    if (!imageId) return undefined;
+
+    getImage(imageId)
+      .then((imageRecord) => {
+        if (!imageRecord?.blob || typeof URL.createObjectURL !== "function") {
+          return src;
+        }
+
+        objectUrl = URL.createObjectURL(imageRecord.blob);
+        return objectUrl;
+      })
+      .catch(() => src)
+      .then((nextSource) => {
+        if (isCurrent) {
+          setIndexedDbSource({ imageId, source: nextSource || null });
+        } else if (objectUrl) {
+          revokeObjectUrl();
+        }
+      });
+
+    return () => {
+      isCurrent = false;
+      revokeObjectUrl();
+    };
+  }, [imageId, src]);
+
   return (
     <RecipeImageContent
-      key={src || "recipe-image-fallback"}
-      src={src}
+      key={resolvedSource || "recipe-image-fallback"}
+      src={resolvedSource}
       alt={alt}
       decorative={decorative}
       className={className}

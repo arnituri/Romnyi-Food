@@ -153,9 +153,10 @@ function AddRecipe() {
           aria-label="Receptkép kiválasztása"
           onClick={() => imageInputRef.current?.click()}
         >
-          {formValues.image ? (
+          {formValues.image || existingRecipe?.imageId ? (
             <RecipeImage
               src={formValues.image}
+              imageId={formValues.image ? undefined : existingRecipe?.imageId}
               alt="Recept előnézet"
               className="image-upload-preview"
               fallbackClassName="image-upload-preview-fallback"

@@ -26,6 +26,25 @@ describe('recipeService', () => {
     expect(getRecipes()).toEqual([recipe]);
   });
 
+  it('keeps legacy recipes valid without an image ID', () => {
+    const recipe = makeRecipe({ image: 'https://example.com/recipe.jpg' });
+    storeRecipes([recipe]);
+
+    expect(getRecipes()).toEqual([recipe]);
+  });
+
+  it('preserves a valid optional image ID and discards malformed image IDs safely', () => {
+    storeRecipes([
+      makeRecipe({ id: 'stored-image', image: '', imageId: ' image-stored-1 ' }),
+      makeRecipe({ id: 'malformed-image', image: '', imageId: 42 }),
+    ]);
+
+    expect(getRecipes()).toEqual([
+      expect.objectContaining({ id: 'stored-image', imageId: 'image-stored-1' }),
+      expect.not.objectContaining({ imageId: expect.anything() }),
+    ]);
+  });
+
   it('recovers from corrupted JSON and preserves the raw data separately', () => {
     localStorage.setItem(RECIPE_STORAGE_KEY, '{not valid json');
 

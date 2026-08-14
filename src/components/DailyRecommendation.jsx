@@ -48,6 +48,7 @@ function DailyRecommendation() {
           <div className="daily-image">
             <RecipeImage
               src={recipe.image}
+              imageId={recipe.imageId}
               alt=""
               decorative
               className="daily-photo"

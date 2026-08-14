@@ -82,7 +82,12 @@ const handleEdit = () => {
 
       <div className="details-container">
 
-        <RecipeImage src={recipe.image} alt={recipe.name} className="details-image" />
+        <RecipeImage
+          src={recipe.image}
+          imageId={recipe.imageId}
+          alt={recipe.name}
+          className="details-image"
+        />
 
         <h1 className="details-title">
           {recipe.name}

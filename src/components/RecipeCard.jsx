@@ -8,7 +8,12 @@ function RecipeCard({ recipe }) {
 
   return (
     <div className="recipe-card">
-      <RecipeImage src={recipe.image} alt={recipe.name} className="recipe-image" />
+      <RecipeImage
+        src={recipe.image}
+        imageId={recipe.imageId}
+        alt={recipe.name}
+        className="recipe-image"
+      />
 
       <div className="recipe-content">
 

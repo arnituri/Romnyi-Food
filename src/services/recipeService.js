@@ -23,6 +23,10 @@ function normalizeText(value) {
   return typeof value === "string" ? value : "";
 }
 
+function normalizeImageId(value) {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
 function normalizeNutritionValue(value) {
   if (value === "" || value === null || value === undefined) {
     return null;
@@ -172,6 +176,7 @@ export function getRecipeVersion(recipe) {
     id: recipe.id,
     name: recipe.name,
     image: recipe.image,
+    imageId: recipe.imageId ?? null,
     category: recipe.category,
     calories: recipe.calories,
     protein: recipe.protein,
@@ -264,10 +269,11 @@ export function isValidRecipeRecord(recipe) {
     recipe &&
     typeof recipe === "object" &&
     !Array.isArray(recipe) &&
-    isValidRecipeId(recipe.id) &&
-    typeof recipe.name === "string" &&
-    typeof recipe.image === "string" &&
-    typeof recipe.category === "string" &&
+      isValidRecipeId(recipe.id) &&
+      typeof recipe.name === "string" &&
+      typeof recipe.image === "string" &&
+      (!Object.hasOwn(recipe, "imageId") || normalizeImageId(recipe.imageId) !== null) &&
+      typeof recipe.category === "string" &&
     isValidBackupNutritionValue(recipe.calories) &&
     isValidBackupNutritionValue(recipe.protein) &&
     isValidBackupNutritionValue(recipe.fat) &&
@@ -346,6 +352,12 @@ function normalizeRecipe(recipe, index, usedIds) {
     favorite: recipe.favorite === true,
     createdAt: normalizeCreatedAt(recipe.createdAt),
   };
+
+  delete normalizedRecipe.imageId;
+  const imageId = normalizeImageId(recipe.imageId);
+  if (imageId) {
+    normalizedRecipe.imageId = imageId;
+  }
 
   if (Object.hasOwn(recipe, "updatedAt")) {
     normalizedRecipe.updatedAt = normalizeUpdatedAt(recipe.updatedAt);
