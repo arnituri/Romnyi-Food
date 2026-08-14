@@ -1,10 +1,13 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it, vi } from "vitest";
+import "fake-indexeddb/auto";
+import { Blob as NodeBlob } from "node:buffer";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NotificationProvider } from "../../components/NotificationProvider";
 import { createBackup } from "../../services/backupService";
 import { getTestStorage } from "../../test/setup";
 import { THEME_STORAGE_KEY } from "../../services/themeService";
+import { resetImageDatabaseForTests } from "../../services/imageDatabaseService";
 import Settings, { MAX_BACKUP_IMPORT_SIZE_BYTES } from "../Settings";
 
 function renderSettings() {
@@ -16,6 +19,17 @@ function renderSettings() {
     </NotificationProvider>,
   );
 }
+
+const browserBlob = globalThis.Blob;
+
+beforeEach(() => {
+  globalThis.Blob = NodeBlob;
+});
+
+afterEach(async () => {
+  await resetImageDatabaseForTests();
+  globalThis.Blob = browserBlob;
+});
 
 describe("Settings theme persistence", () => {
   it("updates the visible theme only after successful persistence", () => {
@@ -44,12 +58,13 @@ describe("Settings theme persistence", () => {
   });
 });
 
-function createBackupFile(size, content = JSON.stringify(createBackup())) {
-  const file = new File([content], "mentes.json", {
+async function createBackupFile(size, content) {
+  const fileContent = content ?? JSON.stringify(await createBackup());
+  const file = new File([fileContent], "mentes.json", {
     type: "",
   });
   Object.defineProperty(file, "size", { value: size });
-  file.text = vi.fn().mockResolvedValue(content);
+  file.text = vi.fn().mockResolvedValue(fileContent);
   return file;
 }
 
@@ -68,7 +83,7 @@ describe("Settings backup import size limit", () => {
   it("accepts a valid backup below the maximum size", async () => {
     renderSettings();
 
-    const file = createBackupFile(MAX_BACKUP_IMPORT_SIZE_BYTES - 1);
+    const file = await createBackupFile(MAX_BACKUP_IMPORT_SIZE_BYTES - 1);
     importBackupFile(file);
 
     await screen.findByRole("dialog", { name: /biztonsági mentés visszaállítása/i });
@@ -78,7 +93,7 @@ describe("Settings backup import size limit", () => {
   it("accepts a file exactly at the maximum size", async () => {
     renderSettings();
 
-    const file = createBackupFile(MAX_BACKUP_IMPORT_SIZE_BYTES);
+    const file = await createBackupFile(MAX_BACKUP_IMPORT_SIZE_BYTES);
     importBackupFile(file);
 
     await screen.findByRole("dialog", { name: /biztonsági mentés visszaállítása/i });
@@ -90,7 +105,7 @@ describe("Settings backup import size limit", () => {
     localStorage.setItem("recipes", existingRecipes);
     renderSettings();
 
-    const file = createBackupFile(MAX_BACKUP_IMPORT_SIZE_BYTES + 1);
+    const file = await createBackupFile(MAX_BACKUP_IMPORT_SIZE_BYTES + 1);
     importBackupFile(file);
 
     await waitFor(() => {
@@ -106,7 +121,7 @@ describe("Settings backup import size limit", () => {
   it("rejects invalid JSON after selection", async () => {
     renderSettings();
 
-    importBackupFile(createBackupFile(24, "nem JSON"));
+    importBackupFile(await createBackupFile(24, "nem JSON"));
 
     expect(await screen.findByRole("status")).toHaveTextContent(
       "A kiválasztott fájl nem olvasható JSON biztonsági mentés.",
@@ -116,7 +131,7 @@ describe("Settings backup import size limit", () => {
 
   it("shows a visible notification when restoring cannot be persisted", async () => {
     renderSettings();
-    const backup = createBackup();
+    const backup = await createBackup();
     backup.data.recipes = [
       {
         id: "recipe-1",
@@ -135,7 +150,7 @@ describe("Settings backup import size limit", () => {
     ];
     getTestStorage().failOnWrite(1);
 
-    importBackupFile(createBackupFile(100, JSON.stringify(backup)));
+    importBackupFile(await createBackupFile(100, JSON.stringify(backup)));
     await screen.findByRole("dialog", { name: /biztonsági mentés visszaállítása/i });
     fireEvent.click(screen.getByRole("button", { name: "Visszaállítás" }));
 
@@ -144,18 +159,18 @@ describe("Settings backup import size limit", () => {
     );
   });
 
-  it("shows the specific iOS storage notification before an unsafe restore writes data", async () => {
+  it("restores an iOS backup after image data is moved out of localStorage", async () => {
     const originalCapacitor = globalThis.Capacitor;
     globalThis.Capacitor = { getPlatform: () => "ios" };
     const existingRecipes = JSON.stringify([{ id: "meglevo", name: "Meglévő recept" }]);
     localStorage.setItem("recipes", existingRecipes);
     renderSettings();
-    const backup = createBackup();
+    const backup = await createBackup();
     backup.data.recipes = [
       {
         id: "recipe-1",
         name: "Teszt recept",
-        image: `data:image/webp;base64,${"a".repeat(5 * 1024 * 1024)}`,
+        image: "data:image/webp;base64,aGVsbG8=",
         category: "Ebéd",
         calories: 450,
         protein: 25,
@@ -169,14 +184,16 @@ describe("Settings backup import size limit", () => {
     ];
 
     try {
-      importBackupFile(createBackupFile(100, JSON.stringify(backup)));
+      importBackupFile(await createBackupFile(100, JSON.stringify(backup)));
       await screen.findByRole("dialog", { name: /biztonsági mentés visszaállítása/i });
       fireEvent.click(screen.getByRole("button", { name: "Visszaállítás" }));
 
-      expect(await screen.findByRole("alert")).toHaveTextContent(
-        "A mentés képekkel együtt túl nagy az iPhone helyi tárhelyéhez. A jelenlegi adataid nem változtak."
-      );
-      expect(localStorage.getItem("recipes")).toBe(existingRecipes);
+      await waitFor(() => {
+        const restoredRecipe = JSON.parse(localStorage.getItem("recipes"))[0];
+        expect(restoredRecipe.image).toBe("");
+        expect(restoredRecipe.imageId).toEqual(expect.any(String));
+      });
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     } finally {
       globalThis.Capacitor = originalCapacitor;
     }
@@ -185,7 +202,7 @@ describe("Settings backup import size limit", () => {
   it("rejects a JSON file that is not a Romnyi Food backup", async () => {
     renderSettings();
 
-    importBackupFile(createBackupFile(2, "{}"));
+    importBackupFile(await createBackupFile(2, "{}"));
 
     expect(await screen.findByRole("status")).toHaveTextContent(
       "Ez a fájl nem érvényes Romnyi Food biztonsági mentés.",

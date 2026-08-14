@@ -5,6 +5,7 @@ import BottomNavigation from "../components/BottomNavigation";
 import {
   createBackup,
   downloadBackup,
+  RESTORE_IMAGE_STAGING_ERROR,
   RESTORE_STORAGE_LIMIT_ERROR,
   resetAppData,
   restoreBackup,
@@ -46,9 +47,15 @@ function Settings() {
     setTheme(nextTheme);
   };
 
-  const handleExport = () => {
-    downloadBackup(createBackup());
-    setNotice({ type: "success", text: "A biztonsági mentés elkészült." });
+  const handleExport = async () => {
+    try {
+      downloadBackup(await createBackup());
+      setNotice({ type: "success", text: "A biztonsági mentés elkészült." });
+    } catch {
+      const text = "A biztonsági mentés elkészítése nem sikerült. Az adataid változatlanok maradtak.";
+      notify.error(text);
+      setNotice({ type: "error", text });
+    }
   };
 
   const handleImportFile = async (event) => {
@@ -87,18 +94,23 @@ function Settings() {
     }
   };
 
-  const confirmAction = () => {
+  const confirmAction = async () => {
     if (pendingAction?.type === "restore") {
       try {
-        restoreBackup(pendingAction.backup);
+        const result = await restoreBackup(pendingAction.backup);
         setTheme(getTheme());
         setPendingAction(null);
+        if (result.cleanupFailed) {
+          notify.warning("A mentés visszaállítása sikerült, de néhány régi kép takarítása későbbre maradt.");
+        }
         navigate("/recipes", { replace: true });
       } catch (error) {
         setPendingAction(null);
         const text =
           error?.message === RESTORE_STORAGE_LIMIT_ERROR
             ? "A mentés képekkel együtt túl nagy az iPhone helyi tárhelyéhez. A jelenlegi adataid nem változtak."
+            : error?.message === RESTORE_IMAGE_STAGING_ERROR
+              ? "A mentés képeinek előkészítése nem sikerült. A jelenlegi adataid nem változtak."
             : "A biztonsági mentés visszaállítása nem sikerült. A meglévő adataid változatlanok maradtak.";
         notify.error(text);
         setNotice({

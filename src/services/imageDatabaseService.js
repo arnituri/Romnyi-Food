@@ -44,6 +44,10 @@ export function generateImageId() {
   return `image-${globalThis.crypto?.randomUUID?.() || createFallbackImageId()}`;
 }
 
+export function generateImageOperationId() {
+  return `operation-${globalThis.crypto?.randomUUID?.() || createFallbackImageId()}`;
+}
+
 export function validateImageRecord(record) {
   if (!record || typeof record !== "object" || Array.isArray(record)) {
     return { valid: false, code: "INVALID_IMAGE_RECORD" };
@@ -198,6 +202,53 @@ export async function deleteImage(id) {
 
     await database.delete(RECIPE_IMAGES_STORE, id);
     return true;
+  });
+}
+
+export async function getImageIds() {
+  return runDatabaseOperation("IMAGE_DATABASE_READ_FAILED", async () => {
+    const database = await openImageDatabase();
+    return database.getAllKeys(RECIPE_IMAGES_STORE);
+  });
+}
+
+export async function storeImageOperation(operation) {
+  if (!operation || !isNonEmptyString(operation.id) || !isNonEmptyString(operation.type)) {
+    throw new ImageDatabaseError("INVALID_IMAGE_OPERATION");
+  }
+
+  return runDatabaseOperation("IMAGE_OPERATION_WRITE_FAILED", async () => {
+    const database = await openImageDatabase();
+    const createdAt = operation.createdAt ?? new Date().toISOString();
+    const imageIds = Array.isArray(operation.imageIds) ? operation.imageIds : [];
+
+    if (!isValidTimestamp(createdAt) || imageIds.some((id) => !isNonEmptyString(id))) {
+      throw new ImageDatabaseError("INVALID_IMAGE_OPERATION");
+    }
+
+    const storedOperation = {
+      ...operation,
+      imageIds,
+      createdAt,
+      updatedAt: operation.updatedAt ?? new Date().toISOString(),
+    };
+    await database.put(IMAGE_OPERATIONS_STORE, storedOperation);
+    return storedOperation;
+  });
+}
+
+export async function getImageOperations() {
+  return runDatabaseOperation("IMAGE_OPERATION_READ_FAILED", async () => {
+    const database = await openImageDatabase();
+    return database.getAll(IMAGE_OPERATIONS_STORE);
+  });
+}
+
+export async function deleteImageOperation(id) {
+  assertImageId(id);
+  return runDatabaseOperation("IMAGE_OPERATION_DELETE_FAILED", async () => {
+    const database = await openImageDatabase();
+    await database.delete(IMAGE_OPERATIONS_STORE, id);
   });
 }
 
